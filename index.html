@@ -6,11 +6,10 @@
 <title>Playbook Administrativo · Gris Contabilidade</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
 const firebaseConfig = {
   apiKey: "AIzaSyDvT3Gdj7AS7a-Uld1Le0ClA6h7cusWkFY",
   authDomain: "gris-playbook.firebaseapp.com",
@@ -20,30 +19,23 @@ const firebaseConfig = {
   appId: "1:1087625764076:web:4f35377a3e0c02e49859c9"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const _auth = firebase.auth();
+const _db   = firebase.firestore();
 
-// Enable offline persistence
-try { await enableIndexedDbPersistence(db); } catch(e) {}
+// Offline persistence
+_db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
-// Expose to global scope for use in main script
-window._fbAuth = auth;
-window._fbDb = db;
-window._fbFns = { signInWithEmailAndPassword, signOut, onAuthStateChanged, collection, doc, setDoc, getDocs, deleteDoc, onSnapshot };
-
-// Auth state listener
-onAuthStateChanged(auth, user => {
+// Auth state listener — controls login/app visibility
+_auth.onAuthStateChanged(user => {
   if (user) {
-    window._fbUser = user;
     document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'block';
+    document.getElementById('app-screen').style.display  = 'block';
     document.getElementById('user-email').textContent = user.email;
-    window._initApp && window._initApp();
+    if (typeof window._initApp === 'function') window._initApp();
   } else {
-    window._fbUser = null;
     document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display  = 'none';
   }
 });
 </script>
@@ -1214,13 +1206,11 @@ function normalizarCliente(c) {
 }
 
 async function saveDB(cliente) {
-  if (!window._fbDb || !window._fbUser) return;
+  if (!_db || !_auth.currentUser) return;
   if (!cliente) return;
   setSyncStatus('syncing');
   try {
-    const { doc, setDoc, collection } = window._fbFns;
-    const ref = doc(collection(window._fbDb, 'clientes'), String(cliente.id));
-    await setDoc(ref, JSON.parse(JSON.stringify(cliente)));
+    await _db.collection('clientes').doc(String(cliente.id)).set(JSON.parse(JSON.stringify(cliente)));
     setSyncStatus('ok');
   } catch(e) {
     console.error('saveDB error:', e);
@@ -1230,10 +1220,9 @@ async function saveDB(cliente) {
 }
 
 async function loadDB() {
-  if (!window._fbDb || !window._fbUser) return;
+  if (!_db || !_auth.currentUser) return;
   try {
-    const { collection, getDocs } = window._fbFns;
-    const snap = await getDocs(collection(window._fbDb, 'clientes'));
+    const snap = await _db.collection('clientes').get();
     clientes = [];
     snap.forEach(d => clientes.push(normalizarCliente(d.data())));
     clientes.sort((a, b) => (a.id || 0) - (b.id || 0));
@@ -1244,10 +1233,9 @@ async function loadDB() {
 }
 
 async function deleteFromDB(clienteId) {
-  if (!window._fbDb || !window._fbUser) return;
+  if (!_db || !_auth.currentUser) return;
   try {
-    const { doc, deleteDoc, collection } = window._fbFns;
-    await deleteDoc(doc(collection(window._fbDb, 'clientes'), String(clienteId)));
+    await _db.collection('clientes').doc(String(clienteId)).delete();
   } catch(e) {
     console.error('deleteFromDB error:', e);
     toast('❌ Erro ao excluir: ' + e.message, '#991b1b');
@@ -1257,9 +1245,8 @@ async function deleteFromDB(clienteId) {
 async function clearDB() {
   if (!confirm('Apagar TODOS os clientes cadastrados? Esta ação não pode ser desfeita.')) return;
   try {
-    const { collection, getDocs, doc, deleteDoc } = window._fbFns;
-    const snap = await getDocs(collection(window._fbDb, 'clientes'));
-    const proms = snap.docs.map(d => deleteDoc(doc(collection(window._fbDb, 'clientes'), d.id)));
+    const snap = await _db.collection('clientes').get();
+    const proms = snap.docs.map(d => _db.collection('clientes').doc(d.id).delete());
     await Promise.all(proms);
     clientes = [];
     clienteAtual = null;
@@ -1290,8 +1277,7 @@ async function importDB(input) {
       if (!Array.isArray(data)) throw new Error('Formato inválido');
       if (!confirm('Importar ' + data.length + ' cliente(s)? Os dados atuais serão substituídos.')) return;
       clientes = data.map(normalizarCliente);
-      const proms = clientes.map(c => saveDB(c));
-      await Promise.all(proms);
+      for (const cl of clientes) { await saveDB(cl); }
       atualizarBadge();
       renderLista();
       toast('✅ ' + clientes.length + ' cliente(s) importado(s)!');
@@ -2786,8 +2772,7 @@ async function fazerLogin() {
   if (!email || !senha) { errEl.textContent = 'Preencha e-mail e senha.'; errEl.style.display='block'; return; }
   btn.disabled = true; btn.textContent = 'Entrando...'; errEl.style.display = 'none';
   try {
-    const { signInWithEmailAndPassword } = window._fbFns;
-    await signInWithEmailAndPassword(window._fbAuth, email, senha);
+    await _auth.signInWithEmailAndPassword(email, senha);
     // onAuthStateChanged will handle the rest
   } catch(e) {
     const msgs = {
@@ -2805,14 +2790,14 @@ async function fazerLogin() {
 
 async function fazerLogout() {
   if (!confirm('Deseja sair do sistema?')) return;
-  const { signOut } = window._fbFns;
-  await signOut(window._fbAuth);
+  await _auth.signOut();
 }
 
 // ══════════════════════════════════════════════
 // INIT — called after Firebase auth confirmed
 // ══════════════════════════════════════════════
 window._initApp = async function() {
+  setSyncStatus('syncing');
   await loadDB();
   atualizarBadge();
   renderLista();
