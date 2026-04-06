@@ -6,6 +6,47 @@
 <title>Playbook Administrativo · Gris Contabilidade</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDvT3Gdj7AS7a-Uld1Le0ClA6h7cusWkFY",
+  authDomain: "gris-playbook.firebaseapp.com",
+  projectId: "gris-playbook",
+  storageBucket: "gris-playbook.firebasestorage.app",
+  messagingSenderId: "1087625764076",
+  appId: "1:1087625764076:web:4f35377a3e0c02e49859c9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Enable offline persistence
+try { await enableIndexedDbPersistence(db); } catch(e) {}
+
+// Expose to global scope for use in main script
+window._fbAuth = auth;
+window._fbDb = db;
+window._fbFns = { signInWithEmailAndPassword, signOut, onAuthStateChanged, collection, doc, setDoc, getDocs, deleteDoc, onSnapshot };
+
+// Auth state listener
+onAuthStateChanged(auth, user => {
+  if (user) {
+    window._fbUser = user;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    window._initApp && window._initApp();
+  } else {
+    window._fbUser = null;
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'none';
+  }
+});
+</script>
 <style>
 :root {
   --navy:#0f1f3d; --navy-mid:#1a3260; --blue:#2563eb; --blue-light:#3b82f6;
@@ -408,9 +449,58 @@ tbody td{padding:12px 18px;font-size:13px;color:var(--text);line-height:1.5;}
 .folder-code{background:var(--navy);color:#fff;border-radius:10px;padding:16px 20px;font-family:'DM Mono',monospace;font-size:13px;line-height:2;margin-bottom:16px;}
 .folder-code .fc-green{color:#86efac;}
 .folder-code .fc-gray{color:rgba(255,255,255,.5);}
+
+/* LOGIN SCREEN */
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,#1e40af 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.login-box{background:#fff;border-radius:24px;padding:48px 40px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;}
+.login-logo{font-size:40px;margin-bottom:8px;}
+.login-box h2{font-family:'DM Serif Display',serif;font-size:26px;color:var(--navy);margin-bottom:4px;}
+.login-box .login-sub{font-size:13px;color:var(--gray);margin-bottom:32px;}
+.login-field{text-align:left;margin-bottom:16px;}
+.login-field label{font-size:11px;font-weight:600;color:var(--gray);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px;}
+.login-field input{width:100%;padding:12px 16px;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;transition:all .2s;background:var(--gray-light);}
+.login-field input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+.login-btn{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:8px;}
+.login-btn:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.3);}
+.login-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.login-error{background:var(--red-light);color:#991b1b;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px;display:none;text-align:left;}
+.login-footer{font-size:11px;color:var(--gray);margin-top:24px;}
+
+/* TOPBAR USER */
+.topbar-user{display:flex;align-items:center;gap:10px;}
+.user-pill{background:var(--sky-pale);border:1px solid var(--sky);color:var(--blue);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;}
+.btn-logout{padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#fff;color:var(--gray);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;}
+.btn-logout:hover{border-color:var(--red);color:var(--red);}
+
+/* SYNC INDICATOR */
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:4px;display:inline-block;}
+.sync-dot.syncing{background:var(--gold);animation:pulse 1s infinite;}
+.sync-dot.error{background:var(--red);}
 </style>
 </head>
 <body>
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:flex">
+  <div class="login-box">
+    <div class="login-logo">📊</div>
+    <h2>Gris Contabilidade</h2>
+    <p class="login-sub">Playbook Administrativo — Acesso Restrito</p>
+    <div class="login-field">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@griscontabil.com.br" onkeydown="if(event.key==='Enter')fazerLogin()">
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()">
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" id="login-btn" onclick="fazerLogin()">Entrar</button>
+    <p class="login-footer">Acesso disponível apenas para membros da equipe Gris.<br>Em caso de problemas, contate o administrador.</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" style="display:none">
 <!-- SIDEBAR -->
 <nav class="sidebar">
   <div class="sidebar-logo">
@@ -444,14 +534,26 @@ tbody td{padding:12px 18px;font-size:13px;color:var(--text);line-height:1.5;}
     <a class="nav-item" onclick="nav('cip',this)"><span class="ico">📋</span><span class="txt">Gerar Comunicado (CIP)</span></a>
     <a class="nav-item" onclick="nav('kpis',this)"><span class="ico">📊</span><span class="txt">Indicadores (KPIs)</span></a>
   </div>
-  <div class="sidebar-footer"><p>Uso interno e restrito.<br>Revisão anual — 2026.</p></div>
+  <div class="sidebar-footer">
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+      <button onclick="exportDB()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:7px 12px;border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:left;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,.16)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">💾 Exportar backup</button>
+      <label style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:7px 12px;border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;display:block;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,.16)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">📂 Importar backup<input type="file" accept=".json" style="display:none" onchange="importDB(this)"></label>
+      <button onclick="clearDB()" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:rgba(255,150,150,.8);padding:7px 12px;border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:left;transition:all .2s;" onmouseover="this.style.background='rgba(239,68,68,.25)'" onmouseout="this.style.background='rgba(239,68,68,.15)'">🗑️ Apagar tudo</button>
+    </div>
+    <p>Uso interno e restrito.<br>Revisão anual — 2026.</p>
+  </div>
 </nav>
 
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <div class="breadcrumb"><span>Administrativo</span><span class="sep">›</span><span class="cur" id="bc">Visão Geral</span></div>
-    <div class="progress-badge"><span class="dot"></span><span>Playbook ativo</span></div>
+    <div class="topbar-user">
+      <span class="sync-dot" id="sync-dot"></span>
+      <span id="sync-label" style="font-size:11px;color:var(--gray)">Sincronizado</span>
+      <span class="user-pill">👤 <span id="user-email"></span></span>
+      <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+    </div>
   </div>
   <div class="content">
 <!-- HOME -->
@@ -1029,6 +1131,7 @@ tbody td{padding:12px 18px;font-size:13px;color:var(--text);line-height:1.5;}
 
   </div><!-- /content -->
 </div><!-- /main -->
+</div><!-- /app-screen -->
 <!-- MODALS -->
 <div class="modal-overlay" id="modal-processo"><div class="modal"><div class="modal-icon">🚀</div><h3>Processo Gerado!</h3><p>O processo completo para <strong id="mp-nome"></strong> foi criado com sucesso.</p><div class="modal-actions"><button class="btn btn-primary" onclick="irProcesso()">Ver Processo →</button><button class="btn btn-secondary" onclick="closeModal('modal-processo')">Fechar</button></div></div></div>
 <div class="modal-overlay" id="modal-email-ok"><div class="modal"><div class="modal-icon">📨</div><h3>E-mail Pronto!</h3><p id="modal-email-msg">O e-mail foi aberto com o PDF gerado. Anexe o arquivo antes de enviar.</p><div class="modal-actions"><button class="btn btn-primary" onclick="closeModal('modal-email-ok')">OK</button></div></div></div>
@@ -1087,6 +1190,117 @@ let driveCurFolder = { cli: null, esc: null };
 let driveBc = { cli: [], esc: [] };
 let driveCurCli = null;
 let drivePDFs = [];
+
+// ══════════════════════════════════════════════
+// PERSISTÊNCIA — Firebase Firestore
+// ══════════════════════════════════════════════
+
+function setSyncStatus(status) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (!dot || !lbl) return;
+  dot.className = 'sync-dot' + (status === 'syncing' ? ' syncing' : status === 'error' ? ' error' : '');
+  lbl.textContent = status === 'syncing' ? 'Salvando...' : status === 'error' ? 'Erro ao salvar' : 'Sincronizado';
+}
+
+function normalizarCliente(c) {
+  if (!c.contatos)     c.contatos     = [];
+  if (!c.customFases)  c.customFases  = {};
+  if (!c.stateEntrada) c.stateEntrada = {};
+  if (!c.stateAlt)     c.stateAlt     = {};
+  if (!c.stateSaida)   c.stateSaida   = {};
+  if (!c.histAlt)      c.histAlt      = [];
+  return c;
+}
+
+async function saveDB(cliente) {
+  if (!window._fbDb || !window._fbUser) return;
+  if (!cliente) return;
+  setSyncStatus('syncing');
+  try {
+    const { doc, setDoc, collection } = window._fbFns;
+    const ref = doc(collection(window._fbDb, 'clientes'), String(cliente.id));
+    await setDoc(ref, JSON.parse(JSON.stringify(cliente)));
+    setSyncStatus('ok');
+  } catch(e) {
+    console.error('saveDB error:', e);
+    setSyncStatus('error');
+    toast('❌ Erro ao salvar: ' + e.message, '#991b1b');
+  }
+}
+
+async function loadDB() {
+  if (!window._fbDb || !window._fbUser) return;
+  try {
+    const { collection, getDocs } = window._fbFns;
+    const snap = await getDocs(collection(window._fbDb, 'clientes'));
+    clientes = [];
+    snap.forEach(d => clientes.push(normalizarCliente(d.data())));
+    clientes.sort((a, b) => (a.id || 0) - (b.id || 0));
+  } catch(e) {
+    console.error('loadDB error:', e);
+    toast('❌ Erro ao carregar dados: ' + e.message, '#991b1b');
+  }
+}
+
+async function deleteFromDB(clienteId) {
+  if (!window._fbDb || !window._fbUser) return;
+  try {
+    const { doc, deleteDoc, collection } = window._fbFns;
+    await deleteDoc(doc(collection(window._fbDb, 'clientes'), String(clienteId)));
+  } catch(e) {
+    console.error('deleteFromDB error:', e);
+    toast('❌ Erro ao excluir: ' + e.message, '#991b1b');
+  }
+}
+
+async function clearDB() {
+  if (!confirm('Apagar TODOS os clientes cadastrados? Esta ação não pode ser desfeita.')) return;
+  try {
+    const { collection, getDocs, doc, deleteDoc } = window._fbFns;
+    const snap = await getDocs(collection(window._fbDb, 'clientes'));
+    const proms = snap.docs.map(d => deleteDoc(doc(collection(window._fbDb, 'clientes'), d.id)));
+    await Promise.all(proms);
+    clientes = [];
+    clienteAtual = null;
+    atualizarBadge();
+    renderLista();
+    toast('✅ Todos os dados foram apagados.');
+  } catch(e) {
+    toast('❌ Erro ao apagar: ' + e.message, '#991b1b');
+  }
+}
+
+function exportDB() {
+  const data = JSON.stringify(clientes, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'gris_playbook_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function importDB(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('Formato inválido');
+      if (!confirm('Importar ' + data.length + ' cliente(s)? Os dados atuais serão substituídos.')) return;
+      clientes = data.map(normalizarCliente);
+      const proms = clientes.map(c => saveDB(c));
+      await Promise.all(proms);
+      atualizarBadge();
+      renderLista();
+      toast('✅ ' + clientes.length + ' cliente(s) importado(s)!');
+    } catch(err) {
+      alert('Erro ao importar: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
 
 // ══════════════════════════════════════════════
 // NAVIGATION
@@ -1368,6 +1582,7 @@ function salvarCliente() {
   };
   clientes.push(c);
   clienteAtual = c;
+  saveDB();
   atualizarBadge();
   // Reset form
   limparFormCad();
@@ -1584,6 +1799,7 @@ function registrarAlt(cid) {
   if (!c.histAlt) c.histAlt = [];
   c.histAlt.unshift({ tipo, desc: document.getElementById('alt-desc-'+cid).value.trim(), resp: document.getElementById('alt-resp-'+cid).value.trim(), data: fmtDate(document.getElementById('alt-data-'+cid).value) });
   c.stateAlt = {}; // reset checklist
+  saveDB();
   renderProcesso(c, 'alt');
   renderLista();
 }
@@ -1674,6 +1890,7 @@ function togFaseStep(cid, stepId, modo) {
   const sk = modo==='saida'?'stateSaida':modo==='alt'?'stateAlt':'stateEntrada';
   if(!c[sk]) c[sk]={};
   c[sk][stepId] = !c[sk][stepId];
+  saveDB();
   renderProcesso(c, modo);
   renderLista();
 }
@@ -1691,6 +1908,7 @@ function addFase(cid, modo) {
   const c = clientes.find(x=>x.id==cid); if(!c) return;
   const fases = getFases(c, modo);
   fases.push({ titulo:'Nova Fase '+(fases.length+1), steps:[{id:'custom_'+Date.now(), titulo:'Nova etapa', desc:''}] });
+  saveDB();
   renderProcesso(c, modo);
   setTimeout(() => editFaseNome(cid, modo, fases.length-1), 100);
 }
@@ -1701,12 +1919,14 @@ function delFase(cid, modo, fi) {
   if (fases.length<=1) { alert('O processo precisa ter ao menos uma fase.'); return; }
   if (!confirm('Excluir a fase "'+fases[fi].titulo+'" e todas as suas etapas?')) return;
   fases.splice(fi, 1);
+  saveDB();
   renderProcesso(c, modo); renderLista();
 }
 
 function addStep(cid, modo, fi) {
   const c = clientes.find(x=>x.id==cid); if(!c) return;
   getFases(c, modo)[fi].steps.push({id:'custom_'+Date.now(), titulo:'Nova etapa', desc:''});
+  saveDB();
   renderProcesso(c, modo);
 }
 
@@ -1715,16 +1935,19 @@ function delStep(cid, modo, fi, si) {
   const steps = getFases(c, modo)[fi].steps;
   if (steps.length<=1) { alert('A fase precisa ter ao menos uma etapa.'); return; }
   steps.splice(si, 1);
+  saveDB();
   renderProcesso(c, modo); renderLista();
 }
 
 function editStepTitulo(cid, modo, fi, si, v) {
   const c = clientes.find(x=>x.id==cid); if(!c) return;
   getFases(c, modo)[fi].steps[si].titulo = v;
+  saveDB();
 }
 function editStepDesc(cid, modo, fi, si, v) {
   const c = clientes.find(x=>x.id==cid); if(!c) return;
   getFases(c, modo)[fi].steps[si].desc = v;
+  saveDB();
 }
 function moveStep(cid, modo, fi, si, dir) {
   const c = clientes.find(x=>x.id==cid); if(!c) return;
@@ -1732,6 +1955,7 @@ function moveStep(cid, modo, fi, si, dir) {
   const ni = si+dir;
   if (ni<0||ni>=steps.length) return;
   [steps[si],steps[ni]] = [steps[ni],steps[si]];
+  saveDB();
   renderProcesso(c, modo);
 }
 
@@ -1753,6 +1977,7 @@ function salvarFaseEdit() {
   const titulo = document.getElementById('mfe-titulo').value.trim();
   if (!titulo) { alert('O título não pode ficar em branco.'); return; }
   getFases(c, modo)[fi].titulo = titulo;
+  saveDB();
   closeModal('modal-fase-edit');
   faseEditCtx = null;
   renderProcesso(c, modo);
@@ -1930,6 +2155,7 @@ function salvarEdicao() {
   clienteEditar.tel = document.getElementById('e-tel').value.trim();
   clienteEditar.origem = document.getElementById('e-origem').value.trim();
   clienteEditar.obs = document.getElementById('e-obs').value.trim();
+  saveDB();
   closeModal('modal-editar');
   renderLista();
   if (clienteAtual && clienteAtual.id===clienteEditar.id) renderProcesso(clienteEditar, modoProcesso);
@@ -1982,15 +2208,17 @@ function abrirExcluir(id) {
   setTimeout(() => document.getElementById('senha-input').focus(), 200);
 }
 
-function confirmarExclusao() {
+async function confirmarExclusao() {
   if (document.getElementById('senha-input').value !== '2016') {
     document.getElementById('senha-error').style.display = 'block';
     document.getElementById('senha-input').value = '';
     return;
   }
-  clientes = clientes.filter(c => c.id !== clienteExcluir);
-  if (clienteAtual && clienteAtual.id === clienteExcluir) clienteAtual = null;
+  const idParaExcluir = clienteExcluir;
+  clientes = clientes.filter(c => c.id !== idParaExcluir);
+  if (clienteAtual && clienteAtual.id === idParaExcluir) clienteAtual = null;
   clienteExcluir = null;
+  await deleteFromDB(idParaExcluir);
   closeModal('modal-excluir');
   renderLista();
   atualizarBadge();
@@ -2548,9 +2776,54 @@ function getFileIcon(name,mime){if(mime==='application/pdf')return'📄';if(mime
 function fmtBytes(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
 
 // ══════════════════════════════════════════════
-// INIT
+// AUTH — Firebase Login / Logout
 // ══════════════════════════════════════════════
-document.getElementById('cip-data').value = today();
+async function fazerLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+  if (!email || !senha) { errEl.textContent = 'Preencha e-mail e senha.'; errEl.style.display='block'; return; }
+  btn.disabled = true; btn.textContent = 'Entrando...'; errEl.style.display = 'none';
+  try {
+    const { signInWithEmailAndPassword } = window._fbFns;
+    await signInWithEmailAndPassword(window._fbAuth, email, senha);
+    // onAuthStateChanged will handle the rest
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found': 'E-mail não encontrado.',
+      'auth/wrong-password': 'Senha incorreta.',
+      'auth/invalid-email': 'E-mail inválido.',
+      'auth/too-many-requests': 'Muitas tentativas. Tente novamente em alguns minutos.',
+      'auth/invalid-credential': 'E-mail ou senha incorretos.',
+    };
+    errEl.textContent = msgs[e.code] || 'Erro: ' + e.message;
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Entrar';
+  }
+}
+
+async function fazerLogout() {
+  if (!confirm('Deseja sair do sistema?')) return;
+  const { signOut } = window._fbFns;
+  await signOut(window._fbAuth);
+}
+
+// ══════════════════════════════════════════════
+// INIT — called after Firebase auth confirmed
+// ══════════════════════════════════════════════
+window._initApp = async function() {
+  await loadDB();
+  atualizarBadge();
+  renderLista();
+  document.getElementById('cip-data').value = today();
+  setSyncStatus('ok');
+};
+
+// Fallback init for when Firebase module loads after DOM
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('cip-data').value = today();
+});
 </script>
 </body>
 </html>
