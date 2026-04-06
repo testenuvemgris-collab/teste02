@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playbook Administrativo · Gris Contabilidade</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --navy:#0f1f3d; --navy-mid:#1a3260; --blue:#2563eb; --blue-light:#3b82f6;
+  --sky:#dbeafe; --sky-pale:#eff6ff; --gold:#f59e0b; --gold-light:#fef3c7;
+  --green:#10b981; --green-light:#d1fae5; --red:#ef4444; --red-light:#fee2e2;
+  --purple:#7c3aed; --purple-light:#ede9fe; --gray:#64748b; --gray-light:#f1f5f9;
+  --white:#ffffff; --text:#1e293b; --radius:12px;
+  --shadow:0 4px 24px rgba(15,31,61,.10); --shadow-lg:0 8px 40px rgba(15,31,61,.16);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--gray-light);color:var(--text);min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;width:260px;height:100vh;background:var(--navy);display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+.sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar-logo .lbl{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.sidebar-logo h1{font-family:'DM Serif Display',serif;font-size:18px;color:#fff;line-height:1.3;}
+.sidebar-logo .ver{display:inline-block;margin-top:8px;background:var(--blue);color:#fff;font-size:10px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:20px;letter-spacing:1px;}
+.nav-sec{padding:16px 0;}
+.nav-sec-title{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);padding:0 24px 8px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 24px;cursor:pointer;border-left:3px solid transparent;transition:all .2s;text-decoration:none;}
+.nav-item:hover{background:rgba(255,255,255,.06);border-left-color:rgba(255,255,255,.2);}
+.nav-item.active{background:rgba(37,99,235,.2);border-left-color:var(--blue-light);}
+.nav-item .ico{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.nav-item .txt{font-size:13px;color:rgba(255,255,255,.75);font-weight:400;line-height:1.3;}
+.nav-item.active .txt{color:#fff;font-weight:500;}
+.nav-badge{margin-left:auto;background:var(--gold);color:#78350f;font-size:10px;font-family:'DM Mono',monospace;font-weight:600;padding:1px 7px;border-radius:10px;}
+.sidebar-footer{margin-top:auto;padding:20px 24px;border-top:1px solid rgba(255,255,255,.08);}
+.sidebar-footer p{font-size:11px;color:rgba(255,255,255,.3);line-height:1.6;}
+
+/* MAIN */
+.main{margin-left:260px;min-height:100vh;}
+.topbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray);}
+.breadcrumb .sep{opacity:.4;}
+.breadcrumb .cur{color:var(--text);font-weight:500;}
+.progress-badge{display:flex;align-items:center;gap:8px;background:var(--green-light);color:#065f46;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;}
+.progress-badge .dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.content{padding:40px;max-width:960px;}
+.section{display:none;}
+.section.active{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,#1e40af 100%);border-radius:20px;padding:48px;color:#fff;position:relative;overflow:hidden;margin-bottom:32px;}
+.hero::before{content:'';position:absolute;right:-60px;top:-60px;width:280px;height:280px;background:radial-gradient(circle,rgba(59,130,246,.3) 0%,transparent 70%);border-radius:50%;}
+.hero-tag{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.9);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:16px;}
+.hero h2{font-family:'DM Serif Display',serif;font-size:36px;line-height:1.2;margin-bottom:12px;}
+.hero p{font-size:15px;color:rgba(255,255,255,.75);max-width:520px;line-height:1.7;}
+.hero-stats{display:flex;gap:32px;margin-top:32px;}
+.hero-stat .number{font-family:'DM Serif Display',serif;font-size:32px;color:#fff;}
+.hero-stat .label{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;}
+.hero-stat-div{width:1px;background:rgba(255,255,255,.15);align-self:stretch;}
+
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;}
+.card{background:#fff;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);cursor:pointer;transition:all .25s;border:2px solid transparent;text-align:left;}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--blue);}
+.card-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px;}
+.card h3{font-size:14px;font-weight:600;margin-bottom:6px;color:var(--text);}
+.card p{font-size:12px;color:var(--gray);line-height:1.5;}
+
+/* SECTION HEADER */
+.sec-header{margin-bottom:28px;}
+.sec-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:8px;}
+.sec-header h2{font-family:'DM Serif Display',serif;font-size:28px;color:var(--navy);margin-bottom:8px;}
+.sec-header p{font-size:14px;color:var(--gray);line-height:1.6;max-width:600px;}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:4px;margin:20px 0;}
+.step{display:flex;gap:16px;align-items:flex-start;padding:16px 20px;background:#fff;border-radius:10px;border-left:3px solid transparent;transition:all .2s;cursor:pointer;}
+.step:hover{border-left-color:var(--blue-light);background:var(--sky-pale);}
+.step.done{border-left-color:var(--green);background:var(--green-light);opacity:.85;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step.done .step-num{background:var(--green);}
+.step-body{flex:1;}
+.step-body strong{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.step-body p{font-size:12px;color:var(--gray);line-height:1.5;}
+.step-check{width:20px;height:20px;border-radius:50%;border:2px solid #cbd5e1;flex-shrink:0;margin-top:4px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s;}
+.step.done .step-check{background:var(--green);border-color:var(--green);color:#fff;}
+
+/* CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:8px;margin:16px 0;}
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:#fff;border-radius:10px;cursor:pointer;transition:all .2s;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.check-item:hover{background:var(--sky-pale);}
+.check-item.checked{background:var(--green-light);}
+.check-box{width:20px;height:20px;border-radius:6px;border:2px solid #cbd5e1;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;margin-top:1px;}
+.check-item.checked .check-box{background:var(--green);border-color:var(--green);color:#fff;}
+.check-item .check-text{font-size:13px;line-height:1.5;color:var(--text);}
+.check-item.checked .check-text{text-decoration:line-through;color:var(--gray);}
+.check-item .check-resp{margin-left:auto;font-size:11px;font-family:'DM Mono',monospace;color:var(--gray);white-space:nowrap;flex-shrink:0;padding-left:12px;}
+
+/* TABLE */
+.table-wrap{background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--navy);}
+thead th{padding:14px 18px;font-size:12px;font-weight:500;color:rgba(255,255,255,.85);text-align:left;letter-spacing:.5px;}
+tbody tr{border-bottom:1px solid #f1f5f9;}
+tbody tr:last-child{border:none;}
+tbody tr:nth-child(even){background:var(--gray-light);}
+tbody tr:hover{background:var(--sky-pale);}
+tbody td{padding:12px 18px;font-size:13px;color:var(--text);line-height:1.5;}
+
+/* ALERTS */
+.alert{display:flex;gap:12px;padding:16px 20px;border-radius:10px;margin:16px 0;font-size:13px;line-height:1.6;}
+.alert-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.alert.warning{background:var(--gold-light);border-left:4px solid var(--gold);}
+.alert.info{background:var(--sky);border-left:4px solid var(--blue);}
+.alert.success{background:var(--green-light);border-left:4px solid var(--green);}
+.alert.danger{background:var(--red-light);border-left:4px solid var(--red);}
+.alert strong{display:block;margin-bottom:4px;font-weight:600;}
+
+/* PROGRESS */
+.prog-wrap{margin:20px 0;}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--gray);margin-bottom:8px;}
+.prog-bar{height:8px;background:#e2e8f0;border-radius:10px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--blue-light));border-radius:10px;transition:width .5s ease;}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--gray-light);padding:4px;border-radius:10px;}
+.tab{flex:1;padding:8px 16px;border:none;background:transparent;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--gray);cursor:pointer;transition:all .2s;}
+.tab.active{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.tab:hover:not(.active){color:var(--text);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+.badge-blue{background:var(--sky);color:#1e40af;}
+.badge-green{background:var(--green-light);color:#065f46;}
+.badge-gold{background:var(--gold-light);color:#92400e;}
+.badge-gray{background:#f1f5f9;color:var(--gray);}
+.badge-red{background:var(--red-light);color:#991b1b;}
+.badge-purple{background:var(--purple-light);color:#5b21b6;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0;}
+.kpi-card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+.kpi-card .kpi-label{font-size:12px;color:var(--gray);margin-bottom:8px;}
+.kpi-card .kpi-value{font-family:'DM Serif Display',serif;font-size:28px;color:var(--navy);}
+.kpi-card .kpi-meta{font-size:11px;color:var(--gray);margin-top:4px;}
+.kpi-card .kpi-bar{height:4px;background:#e2e8f0;border-radius:4px;margin-top:12px;overflow:hidden;}
+.kpi-card .kpi-bar-fill{height:100%;background:var(--blue);border-radius:4px;}
+
+/* DIVIDER */
+.divider{height:1px;background:#e2e8f0;margin:28px 0;}
+
+/* FORMS */
+.form-section-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
+.form-section-title::after{content:'';flex:1;height:1px;background:#e2e8f0;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group.full{grid-column:1/-1;}
+.form-group label{font-size:11px;font-weight:600;color:var(--gray);letter-spacing:.5px;text-transform:uppercase;}
+.form-group input,.form-group textarea,.form-group select{border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--gray-light);transition:all .2s;outline:none;}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+.form-group textarea{resize:vertical;min-height:80px;}
+.checkbox-group{display:flex;flex-wrap:wrap;gap:10px;}
+.checkbox-label{display:flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:13px;transition:all .2s;background:var(--gray-light);}
+.checkbox-label:hover{border-color:var(--blue);background:var(--sky-pale);}
+.checkbox-label input{display:none;}
+
+/* BUTTONS */
+.btn{padding:11px 24px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.3);}
+.btn-secondary{background:var(--gray-light);color:var(--text);}
+.btn-secondary:hover{background:#e2e8f0;}
+.btn-success{background:var(--green);color:#fff;}
+.btn-success:hover{background:#059669;transform:translateY(-1px);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{background:#dc2626;}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-purple:hover{background:#6d28d9;transform:translateY(-1px);}
+.btn-sm{padding:6px 14px;font-size:12px;border-radius:6px;}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;transition:all .2s;}
+.btn-xs-blue{background:var(--sky);color:#1e40af;} .btn-xs-blue:hover{background:var(--blue);color:#fff;}
+.btn-xs-red{background:var(--red-light);color:#991b1b;} .btn-xs-red:hover{background:var(--red);color:#fff;}
+.btn-xs-gold{background:var(--gold-light);color:#78350f;} .btn-xs-gold:hover{background:var(--gold);color:#78350f;}
+
+/* CIP FORM */
+.cip-form{background:#fff;border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);}
+.cip-header{background:var(--navy);color:#fff;margin:-32px -32px 24px;padding:20px 32px;border-radius:var(--radius) var(--radius) 0 0;}
+.cip-header h3{font-family:'DM Serif Display',serif;font-size:18px;}
+.cip-header p{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px;}
+
+/* CLIENT CARDS */
+.client-card{background:#fff;border-radius:var(--radius);padding:18px 20px;display:flex;flex-direction:column;gap:0;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1.5px solid #f1f5f9;transition:all .2s;margin-bottom:10px;}
+.client-card:hover{border-color:var(--blue);}
+.client-card-top{display:flex;align-items:center;gap:16px;cursor:pointer;}
+.cci-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.cci-info{flex:1;}
+.cci-name{font-size:14px;font-weight:600;color:var(--text);}
+.cci-meta{font-size:12px;color:var(--gray);margin-top:2px;}
+.cci-bars{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;}
+.cci-bar-item .cci-bar-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--gray);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;}
+.cci-bar-track{height:5px;background:#e2e8f0;border-radius:4px;overflow:hidden;}
+.cci-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.cci-actions-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 24px;color:var(--gray);}
+.empty-state .es-icon{font-size:48px;margin-bottom:12px;opacity:.4;}
+.empty-state p{font-size:14px;}
+
+/* TIPO SELECTOR */
+.tipo-selector{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+.tipo-card{background:#fff;border:2.5px solid #e2e8f0;border-radius:16px;padding:28px 24px;cursor:pointer;transition:all .25s;text-align:center;position:relative;}
+.tipo-card:hover{border-color:var(--blue);box-shadow:var(--shadow-lg);transform:translateY(-3px);}
+.tipo-card.selected{border-color:var(--blue);background:var(--sky-pale);}
+.tipo-card .tc-icon{font-size:36px;margin-bottom:12px;display:block;}
+.tipo-card h3{font-family:'DM Serif Display',serif;font-size:17px;color:var(--navy);margin-bottom:6px;}
+.tipo-card p{font-size:12px;color:var(--gray);line-height:1.5;}
+.tipo-card .tc-check{position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s;}
+.tipo-card.selected .tc-check{background:var(--blue);border-color:var(--blue);color:#fff;}
+.cliente-form-wrap{display:none;animation:fadeIn .3s ease;}
+.cliente-form-wrap.visible{display:block;}
+
+/* PROCESSO */
+.processo-header{background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:#fff;border-radius:16px 16px 0 0;padding:28px 32px;position:relative;overflow:hidden;}
+.processo-header::before{content:'';position:absolute;right:-20px;top:-20px;width:140px;height:140px;background:radial-gradient(circle,rgba(59,130,246,.3) 0%,transparent 70%);border-radius:50%;}
+.processo-header .ph-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px;}
+.processo-header h3{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px;}
+.processo-header .ph-meta{font-size:12px;color:rgba(255,255,255,.6);}
+.btn-edit-mode{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:20px;border:1.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:rgba(255,255,255,.9);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;transition:all .2s;margin-top:10px;}
+.btn-edit-mode:hover{background:rgba(255,255,255,.22);}
+.btn-edit-mode.on{background:var(--gold);border-color:var(--gold);color:#78350f;}
+.processo-body{background:#fff;border-radius:0 0 16px 16px;border:1.5px solid #e2e8f0;border-top:none;padding:28px 32px;box-shadow:var(--shadow);}
+.processo-mode-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--gray-light);padding:4px;border-radius:10px;}
+.pmt{flex:1;padding:10px 16px;border:none;background:transparent;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--gray);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.pmt.active{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.pmt.saida.active{background:var(--red-light);color:#991b1b;}
+.pmt.alteracao.active{background:var(--gold-light);color:#78350f;}
+
+/* INFO STRIP */
+.info-strip{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.info-item{background:var(--gray-light);border-radius:8px;padding:7px 12px;}
+.info-item .ii-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--gray);text-transform:uppercase;letter-spacing:1px;}
+.info-item .ii-value{font-size:13px;font-weight:500;color:var(--text);}
+
+/* PROGRESS IN PROCESS */
+.proc-prog{background:var(--gray-light);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;}
+.proc-prog .pp-label{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;}
+.proc-prog .pp-wrap{flex:1;}
+.proc-prog .pp-bar{height:6px;background:#e2e8f0;border-radius:6px;overflow:hidden;}
+.proc-prog .pp-fill{height:100%;background:linear-gradient(90deg,var(--green),#34d399);border-radius:6px;transition:width .5s ease;}
+.proc-prog .pp-pct{font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);white-space:nowrap;}
+
+/* FASE BLOCK */
+.fase-block{border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.fase-block.editing{border:2px dashed var(--blue-light);}
+.fase-header{background:var(--gray-light);padding:14px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .2s;}
+.fase-header:hover{background:var(--sky-pale);}
+.fase-num{width:28px;height:28px;border-radius:8px;background:var(--navy);color:#fff;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.fase-title{font-size:14px;font-weight:600;color:var(--navy);flex:1;}
+.fase-badge{font-size:10px;font-family:'DM Mono',monospace;padding:3px 10px;border-radius:10px;}
+.fase-chevron{font-size:12px;color:var(--gray);transition:transform .2s;margin-left:4px;}
+.fase-block.open .fase-chevron{transform:rotate(180deg);}
+.fase-content{display:none;padding:16px;}
+.fase-block.open .fase-content{display:block;}
+
+/* FASE STEP */
+.fase-step{display:flex;flex-direction:column;border-radius:8px;border-left:3px solid transparent;transition:all .2s;cursor:pointer;margin-bottom:4px;}
+.fase-step:hover{background:var(--sky-pale);border-left-color:var(--blue-light);}
+.fase-step.done{background:var(--green-light);border-left-color:var(--green);}
+.fase-step-row{display:flex;align-items:flex-start;gap:14px;padding:10px 14px;}
+.fase-step-num{width:24px;height:24px;border-radius:50%;background:#e2e8f0;color:var(--gray);font-family:'DM Mono',monospace;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .2s;}
+.fase-step.done .fase-step-num{background:var(--green);color:#fff;}
+.fase-step-body{flex:1;}
+.fase-step-body strong{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.fase-step-body p{font-size:12px;color:var(--gray);line-height:1.5;}
+.step-tag{display:inline-block;background:var(--sky);color:#1e40af;font-size:10px;padding:1px 8px;border-radius:8px;margin-top:4px;font-family:'DM Mono',monospace;}
+.fase-step-check{width:18px;height:18px;border-radius:50%;border:2px solid #cbd5e1;flex-shrink:0;margin-top:4px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s;}
+.fase-step.done .fase-step-check{background:var(--green);border-color:var(--green);color:#fff;}
+
+/* FASE EDIT */
+.fase-edit-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 16px;background:#f8faff;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;}
+.btn-fe{padding:3px 10px;font-size:11px;border-radius:6px;border:1.5px solid;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;transition:all .15s;background:#fff;}
+.btn-fe.blue{border-color:var(--blue);color:var(--blue);} .btn-fe.blue:hover{background:var(--blue);color:#fff;}
+.btn-fe.green{border-color:var(--green);color:var(--green);} .btn-fe.green:hover{background:var(--green);color:#fff;}
+.btn-fe.red{border-color:var(--red);color:var(--red);} .btn-fe.red:hover{background:var(--red);color:#fff;}
+.btn-fe.gold{border-color:var(--gold);color:#78350f;} .btn-fe.gold:hover{background:var(--gold);}
+.step-edit-fields{display:none;flex-direction:column;gap:6px;padding:6px 14px 12px 52px;}
+.fase-step.step-editing .step-edit-fields{display:flex;}
+.step-edit-fields input,.step-edit-fields textarea{border:1.5px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:#fff;transition:border-color .2s;}
+.step-edit-fields input:focus,.step-edit-fields textarea:focus{border-color:var(--blue);}
+.step-edit-fields textarea{resize:vertical;min-height:50px;}
+.btn-add-fase{display:flex;align-items:center;gap:8px;width:100%;padding:12px 20px;background:#fff;border:2px dashed #cbd5e1;border-radius:12px;cursor:pointer;font-size:13px;color:var(--gray);font-family:'DM Sans',sans-serif;font-weight:500;transition:all .2s;margin-top:8px;}
+.btn-add-fase:hover{border-color:var(--blue);color:var(--blue);background:var(--sky-pale);}
+
+/* TYPE BADGE */
+.tipo-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:500;margin-bottom:14px;}
+.tipo-badge.novo{background:var(--sky);color:#1e40af;}
+.tipo-badge.migracao{background:var(--purple-light);color:#5b21b6;}
+
+/* EMAIL SECTION */
+.email-section{background:#fff;border-radius:var(--radius);border:1.5px solid #e2e8f0;overflow:hidden;margin-top:24px;box-shadow:var(--shadow);}
+.email-header{background:linear-gradient(135deg,#1e3a5f,var(--navy-mid));color:#fff;padding:20px 28px;display:flex;align-items:center;gap:14px;}
+.email-header .eh-icon{font-size:24px;}
+.email-header h4{font-family:'DM Serif Display',serif;font-size:17px;}
+.email-header p{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;}
+.email-body{padding:24px;}
+.email-from{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--sky-pale);border:1px solid var(--sky);border-radius:8px;margin-bottom:16px;font-size:13px;}
+.ef-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--gray);text-transform:uppercase;margin-right:4px;}
+.ef-addr{color:var(--blue);font-weight:500;}
+.file-upload-area{border:2px dashed #cbd5e1;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gray-light);margin-bottom:14px;}
+.file-upload-area:hover{border-color:var(--blue);background:var(--sky-pale);}
+.file-upload-area .fua-icon{font-size:28px;margin-bottom:6px;}
+.file-upload-area p{font-size:13px;color:var(--gray);}
+.file-upload-area strong{color:var(--blue);}
+.file-preview{display:none;align-items:center;gap:12px;padding:10px 14px;background:var(--green-light);border-radius:8px;margin-bottom:14px;font-size:13px;color:#065f46;}
+.file-preview.visible{display:flex;}
+.fp-remove{margin-left:auto;cursor:pointer;color:var(--red);font-size:16px;}
+
+/* CONTATOS */
+.contato-item{background:var(--gray-light);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;border:1.5px solid #e2e8f0;}
+.ci-info{flex:1;}
+.ci-name{font-size:13px;font-weight:600;color:var(--text);}
+.ci-meta{font-size:12px;color:var(--gray);}
+.ci-cargo{display:inline-block;background:var(--sky);color:#1e40af;font-size:10px;padding:1px 8px;border-radius:8px;font-family:'DM Mono',monospace;margin-top:2px;}
+.ci-remove{cursor:pointer;color:var(--red);font-size:16px;padding:4px;}
+.add-contato-form{background:var(--sky-pale);border:1.5px dashed var(--blue-light);border-radius:10px;padding:16px;margin-top:8px;display:none;}
+.add-contato-form.open{display:block;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:20px;padding:40px;max-width:480px;width:90%;text-align:center;animation:fadeIn .25s ease;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal .modal-icon{font-size:48px;margin-bottom:16px;}
+.modal h3{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);margin-bottom:8px;}
+.modal p{font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:24px;}
+.modal-actions{display:flex;gap:12px;justify-content:center;}
+.modal-large{background:#fff;border-radius:20px;padding:0;max-width:720px;width:95%;max-height:90vh;overflow-y:auto;animation:fadeIn .25s ease;box-shadow:0 20px 60px rgba(0,0,0,.2);text-align:left;}
+.modal-large-header{background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:#fff;padding:24px 32px;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.modal-large-header h3{font-family:'DM Serif Display',serif;font-size:20px;}
+.modal-large-close{cursor:pointer;font-size:20px;color:rgba(255,255,255,.6);}
+.modal-large-close:hover{color:#fff;}
+.modal-large-body{padding:28px 32px;}
+.modal-fase{background:#fff;border-radius:16px;padding:0;max-width:540px;width:95%;animation:fadeIn .2s ease;box-shadow:0 20px 60px rgba(0,0,0,.2);text-align:left;}
+.modal-fase-header{background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:#fff;padding:16px 24px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.modal-fase-header h4{font-family:'DM Serif Display',serif;font-size:16px;}
+.modal-fase-header .mfh-close{cursor:pointer;font-size:18px;color:rgba(255,255,255,.6);}
+.modal-fase-body{padding:20px 24px 24px;}
+
+/* SENHA */
+.senha-input-wrap{position:relative;margin-bottom:16px;}
+.senha-input-wrap input{width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:18px;text-align:center;letter-spacing:8px;font-family:'DM Mono',monospace;outline:none;transition:all .2s;}
+.senha-input-wrap input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.1);}
+.senha-error{color:var(--red);font-size:12px;text-align:center;margin-top:-8px;margin-bottom:12px;display:none;}
+
+/* ALTERAÇÃO */
+.alt-reg-box{background:var(--gold-light);border:1.5px solid var(--gold);border-radius:12px;padding:20px;margin-bottom:20px;}
+.hist-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:12px;}
+
+/* CNPJ LOOKUP */
+.cnpj-lookup{background:var(--sky-pale);border:1.5px solid var(--blue-light);border-radius:12px;padding:18px 20px;margin-bottom:16px;}
+.cnpj-lookup-title{font-size:12px;font-weight:600;color:var(--blue);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.cnpj-result-preview{display:none;margin-top:12px;padding:12px;background:#fff;border-radius:8px;border:1px solid #e2e8f0;}
+
+/* DRIVE */
+.drive-setup-box{background:linear-gradient(135deg,#f8faff,#eff6ff);border:2px dashed var(--blue-light);border-radius:16px;padding:36px;text-align:center;}
+.drive-setup-box .ds-icon{font-size:48px;margin-bottom:12px;}
+.drive-setup-box h3{font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy);margin-bottom:8px;}
+.drive-setup-box p{font-size:13px;color:var(--gray);line-height:1.6;max-width:480px;margin:0 auto 20px;}
+.drive-status-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;font-size:13px;margin-bottom:20px;}
+.drive-status-bar.connected{background:var(--green-light);color:#065f46;}
+.drive-status-bar.disconnected{background:var(--gold-light);color:#78350f;}
+.drive-status-bar.error{background:var(--red-light);color:#991b1b;}
+.drive-panel{display:grid;grid-template-columns:260px 1fr;gap:20px;margin-top:16px;}
+.drive-sidebar-panel{background:var(--gray-light);border-radius:12px;padding:16px;}
+.drive-main-panel{background:#fff;border-radius:12px;padding:20px;border:1.5px solid #e2e8f0;}
+.dft-folder{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .15s;border:1px solid transparent;}
+.dft-folder:hover{background:var(--sky-pale);}
+.dft-folder.active{background:var(--sky);border-color:var(--blue-light);}
+.dft-children{padding-left:24px;border-left:2px dashed #e2e8f0;margin:2px 0 4px 14px;}
+.df-name{font-size:13px;font-weight:500;color:var(--text);flex:1;}
+.drive-file-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.drive-file-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-radius:8px;border:1.5px solid #f1f5f9;transition:all .15s;}
+.drive-file-item:hover{border-color:var(--blue-light);background:var(--sky-pale);}
+.dfi-info{flex:1;min-width:0;}
+.dfi-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dfi-meta{font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;margin-top:1px;}
+.dfi-actions{display:flex;gap:6px;flex-shrink:0;}
+.drive-upload-zone{border:2px dashed #cbd5e1;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gray-light);margin-top:12px;}
+.drive-upload-zone:hover,.drive-upload-zone.dragover{border-color:var(--blue);background:var(--sky-pale);}
+.drive-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray);margin-bottom:10px;flex-wrap:wrap;}
+.dbc-item{cursor:pointer;color:var(--blue);}
+.dbc-item:hover{text-decoration:underline;}
+.dbc-sep{color:#cbd5e1;}
+.dbc-cur{color:var(--text);font-weight:500;}
+.drive-client-select{width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:#fff;outline:none;margin-bottom:16px;}
+.upload-progress{height:4px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-top:8px;display:none;}
+.upload-progress-fill{height:100%;background:var(--blue);border-radius:4px;transition:width .3s ease;width:0%;}
+
+/* TOAST */
+.drive-toast{position:fixed;bottom:24px;right:24px;background:#065f46;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fadeIn .3s ease;}
+
+/* FOLDER STRUCTURE */
+.folder-code{background:var(--navy);color:#fff;border-radius:10px;padding:16px 20px;font-family:'DM Mono',monospace;font-size:13px;line-height:2;margin-bottom:16px;}
+.folder-code .fc-green{color:#86efac;}
+.folder-code .fc-gray{color:rgba(255,255,255,.5);}
+</style>
+</head>
+<body>
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="lbl">Playbook</div>
+    <h1>Departamento<br>Administrativo</h1>
+    <span class="ver">POP-ADM-001 · v3.0</span>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-sec-title">Início</div>
+    <a class="nav-item active" onclick="nav('home',this)"><span class="ico">🏠</span><span class="txt">Visão Geral</span></a>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-sec-title">Clientes</div>
+    <a class="nav-item" onclick="nav('cadastro',this)"><span class="ico">👤</span><span class="txt">Cadastrar Cliente</span></a>
+    <a class="nav-item" onclick="nav('lista',this)"><span class="ico">📋</span><span class="txt">Clientes Cadastrados</span><span class="nav-badge" id="badge-count" style="display:none">0</span></a>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-sec-title">Processos</div>
+    <a class="nav-item" onclick="nav('entrada',this)"><span class="ico">🆕</span><span class="txt">Entrada de Clientes</span></a>
+    <a class="nav-item" onclick="nav('onboarding',this)"><span class="ico">✅</span><span class="txt">Onboarding</span></a>
+    <a class="nav-item" onclick="nav('procuracao',this)"><span class="ico">📜</span><span class="txt">Procuração Eletrônica</span></a>
+    <a class="nav-item" onclick="nav('cadastros',this)"><span class="ico">🗂️</span><span class="txt">Cadastros nos Sistemas</span></a>
+    <a class="nav-item" onclick="nav('nuvem',this)"><span class="ico">☁️</span><span class="txt">Documentos na Nuvem</span></a>
+    <a class="nav-item" onclick="nav('debitos',this)"><span class="ico">🔍</span><span class="txt">Levantamento de Débitos</span></a>
+    <a class="nav-item" onclick="nav('saida',this)"><span class="ico">🚪</span><span class="txt">Saída de Clientes</span></a>
+    <a class="nav-item" onclick="nav('comunicacao',this)"><span class="ico">📢</span><span class="txt">Comunicação Interna</span></a>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-sec-title">Ferramentas</div>
+    <a class="nav-item" onclick="nav('drive',this)"><span class="ico">📁</span><span class="txt">Documentos (Drive)</span></a>
+    <a class="nav-item" onclick="nav('cip',this)"><span class="ico">📋</span><span class="txt">Gerar Comunicado (CIP)</span></a>
+    <a class="nav-item" onclick="nav('kpis',this)"><span class="ico">📊</span><span class="txt">Indicadores (KPIs)</span></a>
+  </div>
+  <div class="sidebar-footer"><p>Uso interno e restrito.<br>Revisão anual — 2026.</p></div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb"><span>Administrativo</span><span class="sep">›</span><span class="cur" id="bc">Visão Geral</span></div>
+    <div class="progress-badge"><span class="dot"></span><span>Playbook ativo</span></div>
+  </div>
+  <div class="content">
+<!-- HOME -->
+<div id="s-home" class="section active">
+  <div class="hero">
+    <div class="hero-tag">Playbook Operacional</div>
+    <h2>Bem-vindo ao<br>Guia do Administrativo</h2>
+    <p>Cadastre clientes, acompanhe processos de entrada, alteração e saída, gere comunicados e gerencie documentos no Drive.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="number">8</div><div class="label">Processos cobertos</div></div>
+      <div class="hero-stat-div"></div>
+      <div class="hero-stat"><div class="number" id="stat-cli">0</div><div class="label">Clientes cadastrados</div></div>
+      <div class="hero-stat-div"></div>
+      <div class="hero-stat"><div class="number">3</div><div class="label">Tipos de processo</div></div>
+    </div>
+  </div>
+  <div class="cards-grid">
+    <div class="card" style="border-color:var(--blue);background:var(--sky-pale)" onclick="nav('cadastro',null)">
+      <div class="card-icon" style="background:var(--sky)">👤</div>
+      <h3>Cadastrar Cliente</h3>
+      <p>Consulta automática CNPJ + processo completo personalizado.</p>
+    </div>
+    <div class="card" onclick="nav('lista',null)">
+      <div class="card-icon" style="background:var(--purple-light)">📋</div>
+      <h3>Clientes Cadastrados</h3>
+      <p>Acompanhe entrada, alteração e saída de cada cliente.</p>
+    </div>
+    <div class="card" onclick="nav('drive',null)">
+      <div class="card-icon" style="background:var(--green-light)">📁</div>
+      <h3>Documentos (Drive)</h3>
+      <p>Gerencie arquivos de clientes e do escritório no Google Drive.</p>
+    </div>
+    <div class="card" onclick="nav('entrada',null)">
+      <div class="card-icon" style="background:var(--sky)">🆕</div>
+      <h3>Entrada de Clientes</h3>
+      <p>Abertura de CNPJ e migração de outro escritório.</p>
+    </div>
+    <div class="card" onclick="nav('cip',null)">
+      <div class="card-icon" style="background:var(--gold-light)">📋</div>
+      <h3>Gerar CIP</h3>
+      <p>Comunicado interno padronizado com PDF e e-mail.</p>
+    </div>
+    <div class="card" onclick="nav('saida',null)">
+      <div class="card-icon" style="background:var(--red-light)">🚪</div>
+      <h3>Saída de Clientes</h3>
+      <p>Encerramento de contrato com segurança e organização.</p>
+    </div>
+  </div>
+  <div class="alert info"><span class="alert-icon">💡</span><div><strong>Como usar</strong> Use "Cadastrar Cliente" para registrar um novo cliente e abrir o processo completo conforme o tipo. Os botões "✏️ Editar fases" nos processos permitem customizar as etapas para cada cliente.</div></div>
+</div>
+
+<!-- CADASTRO -->
+<div id="s-cadastro" class="section">
+  <div class="sec-header"><div class="sec-tag">Novo Cliente</div><h2>Cadastrar Cliente</h2><p>Selecione o tipo de entrada e preencha os dados para gerar o processo completo.</p></div>
+
+  <!-- Passo 1: Tipo -->
+  <div id="cad-step1">
+    <p style="font-size:13px;color:var(--gray);margin-bottom:20px;font-weight:500">Qual é a situação deste cliente?</p>
+    <div class="tipo-selector">
+      <div class="tipo-card" id="tipo-novo" onclick="selTipo('novo')">
+        <span class="tc-check" id="chk-novo"></span>
+        <span class="tc-icon">🆕</span>
+        <h3>CNPJ Novo</h3>
+        <p>Empresa a ser constituída. O escritório realizará todo o processo de abertura.</p>
+      </div>
+      <div class="tipo-card" id="tipo-migracao" onclick="selTipo('migracao')">
+        <span class="tc-check" id="chk-migracao"></span>
+        <span class="tc-icon">🔄</span>
+        <h3>Transferência de Escritório</h3>
+        <p>Cliente com CNPJ ativo transferindo a contabilidade para a Gris.</p>
+      </div>
+    </div>
+    <div id="aviso-tipo" class="alert warning" style="display:none"><span class="alert-icon">⚠️</span><div>Selecione um tipo de entrada antes de continuar.</div></div>
+    <button class="btn btn-primary" onclick="avancarCadastro()">Continuar →</button>
+  </div>
+
+  <!-- Passo 2: Formulário -->
+  <div id="cad-step2" class="cliente-form-wrap">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <button class="btn btn-secondary btn-sm" onclick="voltarTipo()">← Voltar</button>
+      <span id="tipo-badge-show"></span>
+    </div>
+    <div class="cip-form">
+      <div class="cip-header"><h3>Dados do Cliente</h3><p>Consulte o CNPJ para preenchimento automático (transferências) ou preencha manualmente.</p></div>
+
+      <!-- Consulta CNPJ -->
+      <div class="cnpj-lookup" id="cnpj-lookup-box">
+        <div class="cnpj-lookup-title">🔍 Consulta Automática — Receita Federal</div>
+        <div style="display:flex;gap:10px;align-items:flex-end">
+          <div class="form-group" style="flex:1;margin:0">
+            <label>CNPJ para consulta</label>
+            <input type="text" id="cnpj-busca" placeholder="00.000.000/0000-00" oninput="maskCNPJ(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();consultarCNPJ();}" style="background:#fff">
+          </div>
+          <button class="btn btn-primary" id="btn-consultar" onclick="consultarCNPJ()" style="white-space:nowrap;flex-shrink:0">🔍 Consultar</button>
+        </div>
+        <div id="cnpj-status" style="margin-top:8px;font-size:12px;display:none"></div>
+        <div class="cnpj-result-preview" id="cnpj-preview">
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Dados encontrados — confirme para preencher</div>
+          <div id="cnpj-dados"></div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-success btn-sm" onclick="confirmarCNPJ()">✓ Preencher formulário</button>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('cnpj-preview').style.display='none'">Cancelar</button>
+          </div>
+        </div>
+        <p id="cnpj-lookup-note" style="font-size:11px;color:var(--gray);margin-top:8px">Consulte o CNPJ para preenchimento automático dos dados.</p>
+      </div>
+
+      <div class="form-section-title">Identificação</div>
+      <div class="form-row">
+        <div class="form-group"><label>Razão Social *</label><input type="text" id="c-razao" placeholder="Nome completo da empresa"></div>
+        <div class="form-group"><label>Nome Fantasia</label><input type="text" id="c-fantasia" placeholder="Nome fantasia"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" id="g-cnpj"><label>CNPJ</label><input type="text" id="c-cnpj" placeholder="00.000.000/0000-00" oninput="maskCNPJ(this)"></div>
+        <div class="form-group"><label>Tipo Societário</label><select id="c-tpsoc"><option value="">Selecione...</option><option>MEI</option><option>Empresário Individual (EI)</option><option>EIRELI</option><option>Ltda.</option><option>S/A</option><option>Associação / Fundação</option><option>Outro</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Regime Tributário</label><select id="c-regime"><option value="">A definir / verificar</option><option>MEI</option><option>Simples Nacional</option><option>Lucro Presumido</option><option>Lucro Real</option></select></div>
+        <div class="form-group"><label>Responsável pelo Atendimento</label><input type="text" id="c-resp" placeholder="Nome do analista"></div>
+      </div>
+
+      <div class="form-section-title">Contato Principal</div>
+      <div class="form-row">
+        <div class="form-group"><label>Nome do Sócio / Contato</label><input type="text" id="c-socio" placeholder="Nome completo"></div>
+        <div class="form-group"><label>E-mail do Cliente</label><input type="email" id="c-email" placeholder="email@empresa.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Telefone / WhatsApp</label><input type="text" id="c-tel" placeholder="(11) 99999-9999"></div>
+        <div class="form-group"><label>Data de Entrada</label><input type="date" id="c-data"></div>
+      </div>
+      <div class="form-group full" style="margin-bottom:16px" id="g-origem">
+        <label>Escritório de Origem (migração)</label>
+        <input type="text" id="c-origem" placeholder="Nome do escritório anterior">
+      </div>
+      <div class="form-group full" style="margin-bottom:24px">
+        <label>Observações</label>
+        <textarea id="c-obs" placeholder="Informações adicionais..."></textarea>
+      </div>
+      <div style="display:flex;gap:12px">
+        <button class="btn btn-primary" onclick="salvarCliente()">🚀 Gerar Processo Completo</button>
+        <button class="btn btn-secondary" onclick="limparFormCad()">🗑️ Limpar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LISTA CLIENTES -->
+<div id="s-lista" class="section">
+  <div class="sec-header"><div class="sec-tag">Gestão</div><h2>Clientes Cadastrados</h2><p>Use os botões para ver o processo de entrada, alteração ou saída, editar cadastro ou excluir.</p></div>
+  <div id="lista-empty" class="empty-state"><div class="es-icon">👤</div><p>Nenhum cliente cadastrado.<br>Use "Cadastrar Cliente" para começar.</p></div>
+  <div id="lista-items"></div>
+</div>
+
+<!-- PROCESSO CLIENTE -->
+<div id="s-processo" class="section">
+  <div class="sec-header"><div class="sec-tag" id="pc-tag">Processo</div><h2 id="pc-title">Processo Completo</h2><p id="pc-desc">Marque cada etapa conforme for concluída.</p></div>
+  <div class="processo-mode-tabs">
+    <button class="pmt active" id="pmt-entrada" onclick="setModo('entrada')">🆕 Processo de Entrada</button>
+    <button class="pmt alteracao" id="pmt-alteracao" onclick="setModo('alteracao')">✏️ Processo de Alteração</button>
+    <button class="pmt saida" id="pmt-saida" onclick="setModo('saida')">🚪 Processo de Saída</button>
+  </div>
+  <div id="proc-entrada"></div>
+  <div id="proc-alteracao" style="display:none"></div>
+  <div id="proc-saida" style="display:none"></div>
+</div>
+<!-- ENTRADA -->
+<div id="s-entrada" class="section">
+  <div class="sec-header"><div class="sec-tag">Processo 01</div><h2>Entrada de Clientes</h2><p>Dois fluxos: abertura de novo CNPJ ou recepção de cliente de outro escritório.</p></div>
+  <div class="tabs">
+    <button class="tab active" onclick="swTab('ent','abertura',this)">🆕 Abertura de CNPJ</button>
+    <button class="tab" onclick="swTab('ent','migracao',this)">🔄 Migração de Escritório</button>
+  </div>
+  <div id="ent-abertura" class="tab-content active">
+    <div class="alert info"><span class="alert-icon">ℹ️</span><div><strong>Quando usar</strong> O cliente não possui CNPJ. O escritório realizará toda a constituição.</div></div>
+    <div class="steps">
+      <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Analisar a solicitação</strong><p>Verificar tipo societário desejado e atividades pretendidas.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Coletar documentação dos sócios</strong><p>RG/CPF ou CNH, comprovante de residência (até 90 dias), endereço do estabelecimento, declaração de desimpedimento.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Elaborar Contrato Social / Requerimento</strong><p>Redigir e encaminhar para assinatura de todos os sócios.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Registrar na Junta Comercial / Cartório</strong><p>JUCESP para Ltda./S/A, Cartório RTD para EI/Associações.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">5</div><div class="step-body"><strong>Aguardar emissão do CNPJ</strong><p>Acompanhar na Receita Federal até a emissão do Cartão CNPJ.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">6</div><div class="step-body"><strong>Efetuar Inscrições Estadual e Municipal</strong><p>IE e IM conforme a atividade do cliente.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">7</div><div class="step-body"><strong>Solicitar Alvará de Funcionamento</strong><p>Se necessário, protocolar junto à Prefeitura.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">8</div><div class="step-body"><strong>Definir regime tributário</strong><p>MEI, Simples Nacional, Lucro Presumido ou Lucro Real.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">9</div><div class="step-body"><strong>Iniciar o Onboarding</strong><p>Com o CNPJ em mãos, seguir para o processo de Onboarding.</p></div><div class="step-check"></div></div>
+    </div>
+    <div class="alert warning"><span class="alert-icon">⚠️</span><div><strong>Prazo estimado</strong> 5 a 20 dias úteis dependendo do estado e complexidade societária.</div></div>
+  </div>
+  <div id="ent-migracao" class="tab-content">
+    <div class="alert info"><span class="alert-icon">ℹ️</span><div><strong>Quando usar</strong> Cliente com CNPJ ativo transferindo a contabilidade para a Gris.</div></div>
+    <div class="steps">
+      <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Reunião inicial com o cliente</strong><p>Histórico contábil, fiscal, situação atual e motivação da troca.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Solicitar documentação completa</strong><p>Contrato Social, últimos 12 meses de escrituração, balancetes dos 2 últimos exercícios, folha/FGTS, certidões vigentes e SPED.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Levantamento de débitos</strong><p>e-CAC, SEFAZ, Prefeitura, FGTS, PGFN. Obrigatório antes da assinatura do contrato.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Assinar contrato de prestação de serviços</strong><p>Após apresentar o diagnóstico ao cliente.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">5</div><div class="step-body"><strong>Notificar o escritório anterior</strong><p>E-mail formal com confirmação de leitura ou AR.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">6</div><div class="step-body"><strong>Coletar arquivos do escritório anterior</strong><p>Todos os arquivos digitais, SPED, declarações e livros contábeis.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">7</div><div class="step-body"><strong>Iniciar o Onboarding</strong><p>Com toda a documentação em mãos.</p></div><div class="step-check"></div></div>
+    </div>
+    <div class="alert danger"><span class="alert-icon">🚨</span><div><strong>Atenção</strong> O levantamento de débitos DEVE ser concluído antes da assinatura do contrato.</div></div>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div id="s-onboarding" class="section">
+  <div class="sec-header"><div class="sec-tag">Processo 02</div><h2>Onboarding do Cliente</h2><p>Checklist completo de integração. Marque cada etapa conforme for concluída.</p></div>
+  <div class="prog-wrap"><div class="prog-label"><span>Progresso do Onboarding</span><span id="onb-pct">0 / 11</span></div><div class="prog-bar"><div class="prog-fill" id="onb-bar" style="width:0%"></div></div></div>
+  <div class="checklist" id="onb-list">
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Assinar o contrato de prestação de serviços</span><span class="check-resp">Adm.</span></div>
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Coletar documentação completa do cliente e sócios</span><span class="check-resp">Adm.</span></div>
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Emitir e registrar a procuração eletrônica</span><span class="check-resp">Adm.</span></div>
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Cadastrar no sistema contábil</span><span class="check-resp">Adm.</span></div>
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Cadastrar no sistema de gestão de tarefas</span><span class="check-resp">Adm.</span></div>
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Cadastrar no sistema de gerenciamento de CND</span><span class="check-resp">Adm.</span></div>
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Criar pasta e estrutura de documentos na nuvem</span><span class="check-resp">Adm.</span></div>
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Enviar e-mail de boas-vindas ao cliente</span><span class="check-resp">Adm.</span></div>
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Comunicar os demais departamentos sobre o novo cliente</span><span class="check-resp">Adm.</span></div>
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Agendar reunião de apresentação com o cliente (se necessário)</span><span class="check-resp">Coord.</span></div>
+    <div class="check-item" onclick="togCheck(this,'onb')"><div class="check-box"></div><span class="check-text">Confirmar conclusão do onboarding com o coordenador</span><span class="check-resp">Coord.</span></div>
+  </div>
+</div>
+
+<!-- PROCURAÇÃO -->
+<div id="s-procuracao" class="section">
+  <div class="sec-header"><div class="sec-tag">Processo 03</div><h2>Procuração Eletrônica</h2><p>e-CAC, Gov.br e demais portais.</p></div>
+  <div class="tabs">
+    <button class="tab active" onclick="swTab('proc','ecac',this)">🏛️ e-CAC</button>
+    <button class="tab" onclick="swTab('proc','govbr',this)">🇧🇷 Gov.br / Outros</button>
+  </div>
+  <div id="proc-ecac" class="tab-content active">
+    <div class="steps">
+      <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Acessar Portal e-CAC</strong><p>cav.receita.fazenda.gov.br — com certificado digital do cliente.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Navegar até Procurações</strong><p>Procurações → Gerenciar Procurações → Outorgar Procuração.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Selecionar CNPJ outorgante e outorgado</strong><p>Cliente = outorgante · Escritório = outorgado.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Selecionar serviços e prazo</strong><p>Declarações, dados cadastrais, parcelamentos. Prazo recomendado: 2 anos.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">5</div><div class="step-body"><strong>Registrar número e arquivar</strong><p>Anotar no sistema interno e salvar comprovante na pasta 03 - Contratos e Procurações.</p></div><div class="step-check"></div></div>
+    </div>
+  </div>
+  <div id="proc-govbr" class="tab-content">
+    <div class="steps">
+      <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Verificar nível da conta Gov.br</strong><p>O cliente precisa ter conta Gov.br nível Prata ou Ouro.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Orientar elevação de nível (se necessário)</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Acessar portais estaduais e municipais</strong><p>SEFAZ estadual, portal da Prefeitura, eSocial, PGFN.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Registrar no sistema interno</strong><p>Todos os acessos com datas de vencimento.</p></div><div class="step-check"></div></div>
+    </div>
+    <div class="alert warning"><span class="alert-icon">⚠️</span><div>Renove as procurações com antecedência mínima de 30 dias do vencimento.</div></div>
+  </div>
+</div>
+
+<!-- CADASTROS -->
+<div id="s-cadastros" class="section">
+  <div class="sec-header"><div class="sec-tag">Processo 04</div><h2>Cadastros nos Sistemas</h2><p>Sistema contábil, gestão de tarefas e CND.</p></div>
+  <div class="tabs">
+    <button class="tab active" onclick="swTab('cad','contabil',this)">📊 Sistema Contábil</button>
+    <button class="tab" onclick="swTab('cad','tarefas',this)">✅ Gestão de Tarefas</button>
+    <button class="tab" onclick="swTab('cad','cnd',this)">🔏 CND</button>
+  </div>
+  <div id="cad-contabil" class="tab-content active">
+    <div class="steps">
+      <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Acessar sistema contábil como administrador</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Cadastrar dados da empresa</strong><p>Razão Social, Nome Fantasia, CNPJ, IE, IM, endereço, regime tributário, CNAE, data de abertura, sócios.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Vincular sócios e percentuais</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Configurar plano de contas e parâmetros fiscais</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">5</div><div class="step-body"><strong>Validar com o contador responsável</strong></div><div class="step-check"></div></div>
+    </div>
+  </div>
+  <div id="cad-tarefas" class="tab-content">
+    <div class="steps">
+      <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Criar cliente no sistema de gestão de tarefas</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Configurar obrigações recorrentes</strong><p>DAS (SN) · DCTF/DCTF-Web · EFD ICMS/IPI · EFD Contribuições · SPED Contábil · ECF · Folha/FGTS/eSocial</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Atribuir tarefas e definir prazos internos</strong><p>Mínimo 3 dias úteis de antecedência antes do prazo legal.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Ativar notificações automáticas</strong></div><div class="step-check"></div></div>
+    </div>
+  </div>
+  <div id="cad-cnd" class="tab-content">
+    <div class="steps">
+      <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Cadastrar empresa com CNPJ e e-mail</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Configurar monitoramento</strong><p>CND Federal · CND Estadual · CND Municipal · CRF (FGTS) · CNDT (TST)</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Definir alerta de renovação (30 dias)</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Emitir certidões iniciais e arquivar na nuvem</strong><p>Pasta 04 - Certidões.</p></div><div class="step-check"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NUVEM -->
+<div id="s-nuvem" class="section">
+  <div class="sec-header"><div class="sec-tag">Processo 05</div><h2>Documentos na Nuvem</h2><p>Estrutura de pastas e nomenclatura de arquivos.</p></div>
+  <div class="table-wrap"><table><thead><tr><th>Pasta Principal</th><th>Conteúdo</th></tr></thead><tbody>
+    <tr><td>📁 01 - Documentos Societários</td><td>Contrato Social, Alterações, Atas, Cartão CNPJ, Inscrições</td></tr>
+    <tr><td>📁 02 - Documentos dos Sócios</td><td>RG, CPF, CNH, Comprovante de Residência</td></tr>
+    <tr><td>📁 03 - Contratos e Procurações</td><td>Contrato de Honorários, Procurações, Renovações</td></tr>
+    <tr><td>📁 04 - Certidões</td><td>CND Federal, Estadual, Municipal, FGTS, CNDT</td></tr>
+    <tr><td>📁 05 - Fiscal</td><td>Ano › Mês › (NF-e, Apuração, Guias, SPED)</td></tr>
+    <tr><td>📁 06 - Contábil</td><td>Ano › (Balancete, Balanço, SPED Contábil, ECF)</td></tr>
+    <tr><td>📁 07 - Departamento Pessoal</td><td>Ano › Mês › (Folha, FGTS, eSocial, RAIS, DIRF)</td></tr>
+    <tr><td>📁 08 - Correspondências</td><td>Intimações, Notificações, E-mails importantes</td></tr>
+    <tr><td>📁 09 - Abertura / Encerramento</td><td>Documentos do processo de abertura ou encerramento</td></tr>
+  </tbody></table></div>
+  <div class="folder-code">
+    <span class="fc-gray">Padrão de nomenclatura:</span><br>
+    <span class="fc-green">AAAA-MM_CNPJ_TipoDocumento_Versão.extensão</span><br>
+    <span class="fc-gray">Exemplos:</span><br>
+    <span class="fc-green">2026-03_12345678000100_CND-Federal_v1.pdf</span><br>
+    <span class="fc-green">2026-01_12345678000100_Balancete_v1.xlsx</span>
+  </div>
+</div>
+
+<!-- DÉBITOS -->
+<div id="s-debitos" class="section">
+  <div class="sec-header"><div class="sec-tag">Processo 06</div><h2>Levantamento de Débitos Fiscais</h2><p>Realizado principalmente na entrada de clientes vindos de outro escritório.</p></div>
+  <div class="steps">
+    <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Receber solicitação formal</strong><p>Por e-mail ou sistema interno.</p></div><div class="step-check"></div></div>
+    <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Acessar portais com procuração</strong><p>e-CAC · SEFAZ Estadual · Portal da Prefeitura · Caixa (FGTS) · PGFN</p></div><div class="step-check"></div></div>
+    <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Consolidar relatório padronizado</strong><p>Órgão credor · natureza do débito · valor original, multa, juros e total · situação.</p></div><div class="step-check"></div></div>
+    <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Encaminhar ao cliente com prazo de retorno</strong></div><div class="step-check"></div></div>
+    <div class="step" onclick="togStep(this)"><div class="step-num">5</div><div class="step-body"><strong>Arquivar na nuvem</strong><p>Pasta 08 - Correspondências.</p></div><div class="step-check"></div></div>
+  </div>
+  <div class="alert warning"><span class="alert-icon">⚠️</span><div><strong>Ressalva obrigatória</strong> O levantamento não implica responsabilidade do escritório. O relatório deve conter a data-base das informações.</div></div>
+</div>
+
+<!-- SAÍDA -->
+<div id="s-saida" class="section">
+  <div class="sec-header"><div class="sec-tag">Processo 07</div><h2>Saída de Clientes</h2><p>Encerramento profissional com entrega completa de documentação e revogação de acessos.</p></div>
+  <div class="tabs">
+    <button class="tab active" onclick="swTab('sai','rescisao',this)">📩 Rescisão</button>
+    <button class="tab" onclick="swTab('sai','encerramento',this)">📤 Encerramento</button>
+    <button class="tab" onclick="swTab('sai','revogacao',this)">🔒 Revogação</button>
+  </div>
+  <div id="sai-rescisao" class="tab-content active">
+    <div class="steps">
+      <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Receber solicitação por escrito</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Verificar prazo de aviso prévio</strong><p>Conforme contrato de prestação de serviços.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Confirmar recebimento ao cliente com protocolo</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Comunicar coordenador e gerência imediatamente</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">5</div><div class="step-body"><strong>Emitir CIP para todos os departamentos</strong><p>Notificar Fiscal, Contábil e DP com a data limite das últimas obrigações.</p></div><div class="step-check"></div></div>
+    </div>
+  </div>
+  <div id="sai-encerramento" class="tab-content">
+    <div class="steps">
+      <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Verificar obrigações em aberto</strong><p>Garantir entrega de todas até a data de encerramento.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Emitir guias e declarações pendentes</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Organizar e disponibilizar documentos ao cliente</strong><p>Arquivos digitais, livros SPED, todas as declarações, relatório de certidões.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Solicitar confirmação de recebimento por e-mail</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">5</div><div class="step-body"><strong>Emitir NF de rescisão / acerto de honorários</strong></div><div class="step-check"></div></div>
+    </div>
+  </div>
+  <div id="sai-revogacao" class="tab-content">
+    <div class="alert danger" style="margin-bottom:16px"><span class="alert-icon">🚨</span><div><strong>Somente após confirmação</strong> Nunca revogar antes de receber confirmação de recebimento dos documentos.</div></div>
+    <div class="steps">
+      <div class="step" onclick="togStep(this)"><div class="step-num">1</div><div class="step-body"><strong>Revogar procuração no e-CAC</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">2</div><div class="step-body"><strong>Revogar acessos em portais estaduais e municipais</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">3</div><div class="step-body"><strong>Remover acesso ao portal do escritório</strong></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">4</div><div class="step-body"><strong>Inativar cadastros nos sistemas internos</strong><p>Contábil, tarefas e CND.</p></div><div class="step-check"></div></div>
+      <div class="step" onclick="togStep(this)"><div class="step-num">5</div><div class="step-body"><strong>Arquivar em clientes encerrados</strong><p>Manter por mínimo 5 anos. Registrar data e motivo.</p></div><div class="step-check"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- COMUNICAÇÃO -->
+<div id="s-comunicacao" class="section">
+  <div class="sec-header"><div class="sec-tag">Processo 08</div><h2>Comunicação Interdepartamental</h2><p>Eventos que exigem notificação dos departamentos.</p></div>
+  <div class="table-wrap"><table><thead><tr><th>Evento</th><th>Origem</th><th>Notificar</th><th>Prazo</th></tr></thead><tbody>
+    <tr><td>Entrada de novo cliente</td><td>Adm.</td><td>Fiscal, Contábil, DP</td><td>Imediato</td></tr>
+    <tr><td>Saída de cliente</td><td>Adm.</td><td>Fiscal, Contábil, DP</td><td>Imediato</td></tr>
+    <tr><td>Alteração de regime tributário</td><td>Adm./Fiscal</td><td>Fiscal, Contábil, DP</td><td>2 dias úteis</td></tr>
+    <tr><td>Alteração de CNAE / atividade</td><td>Adm.</td><td>Fiscal, Contábil</td><td>2 dias úteis</td></tr>
+    <tr><td>Alteração de sócios / quadro societário</td><td>Adm.</td><td>Contábil, DP, Fiscal</td><td>2 dias úteis</td></tr>
+    <tr><td>Alteração de endereço / filial</td><td>Adm.</td><td>Fiscal, Contábil, DP</td><td>2 dias úteis</td></tr>
+    <tr><td>Exclusão do Simples Nacional</td><td>Fiscal/Adm.</td><td>Contábil, DP, Adm.</td><td>Imediato</td></tr>
+    <tr><td>Abertura de filial</td><td>Adm.</td><td>Fiscal, Contábil, DP</td><td>Imediato</td></tr>
+    <tr><td>Encerramento / Baixa do CNPJ</td><td>Adm.</td><td>Fiscal, Contábil, DP</td><td>Imediato</td></tr>
+    <tr><td>Parcelamento de débitos</td><td>Adm./Fiscal</td><td>Contábil, Fiscal</td><td>2 dias úteis</td></tr>
+  </tbody></table></div>
+</div>
+<!-- DRIVE -->
+<div id="s-drive" class="section">
+  <div class="sec-header"><div class="sec-tag">Documentos</div><h2>Documentos na Nuvem (Drive)</h2><p>Gerencie arquivos de clientes e do escritório integrado ao Google Drive.</p></div>
+  <div id="drive-not-cfg">
+    <div class="drive-setup-box">
+      <div class="ds-icon">📁</div>
+      <h3>Conectar ao Google Drive</h3>
+      <p>Informe o Client ID do seu projeto no Google Cloud Console. A autenticação é feita no navegador — nenhum dado passa por servidores externos.</p>
+      <button class="btn btn-primary" onclick="toggleDriveCfg()">⚙️ Configurar</button>
+      <button class="btn btn-secondary" style="margin-left:8px" onclick="toggleDriveGuia()">📖 Instruções</button>
+      <div id="drive-cfg-form" style="display:none;text-align:left;margin-top:20px;background:#fff;border-radius:12px;padding:20px;border:1.5px solid #e2e8f0">
+        <div class="form-group" style="margin-bottom:12px"><label>Google Client ID</label><input type="text" id="drive-client-id" placeholder="000000.apps.googleusercontent.com" style="background:#fff"></div>
+        <div class="form-group" style="margin-bottom:16px"><label>Pasta raiz no Drive</label><input type="text" id="drive-root-name" value="Gris Contabilidade" style="background:#fff"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="salvarCfgDrive()">💾 Salvar e Conectar</button>
+          <button class="btn btn-secondary btn-sm" onclick="toggleDriveCfg()">Cancelar</button>
+        </div>
+      </div>
+      <div id="drive-guia" style="display:none;text-align:left;margin-top:20px;background:#fff;border-radius:12px;padding:20px;border:1.5px solid #e2e8f0">
+        <h4 style="font-family:'DM Serif Display',serif;font-size:16px;color:var(--navy);margin-bottom:14px">Como configurar em 5 passos</h4>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.6">
+          <div style="display:flex;gap:10px"><span style="background:var(--navy);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</span><div>Acesse <strong>console.cloud.google.com</strong> e crie um projeto</div></div>
+          <div style="display:flex;gap:10px"><span style="background:var(--navy);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</span><div>APIs e Serviços → Biblioteca → ative <strong>Google Drive API</strong></div></div>
+          <div style="display:flex;gap:10px"><span style="background:var(--navy);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</span><div>Tela de consentimento OAuth → Externo → adicione seu e-mail como usuário de teste</div></div>
+          <div style="display:flex;gap:10px"><span style="background:var(--navy);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</span><div>Credenciais → Criar → OAuth 2.0 → tipo "Aplicativo da Web" → adicione a URL do Netlify em "Origens autorizadas"</div></div>
+          <div style="display:flex;gap:10px"><span style="background:var(--navy);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">5</span><div>Copie o <strong>Client ID</strong> e cole no campo acima</div></div>
+        </div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="toggleDriveGuia()">Fechar</button>
+      </div>
+    </div>
+  </div>
+  <div id="drive-cfg" style="display:none">
+    <div class="drive-status-bar" id="drive-status-bar">
+      <span id="drive-s-icon">⚡</span>
+      <span id="drive-s-text">Não autenticado</span>
+      <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" id="btn-drive-con" onclick="driveConnect()">🔗 Conectar ao Google</button>
+        <button class="btn btn-secondary btn-sm" onclick="driveDisconnect()">Desconectar</button>
+        <button class="btn btn-secondary btn-sm" onclick="abrirReconfigurarDrive()" title="Reconfigurar / Trocar Client ID">⚙️ Reconfigurar</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirCfgDrive()" title="Apagar configuração e começar do zero">🗑️ Apagar config</button>
+      </div>
+    </div>
+    <div id="drive-reconfig-box" style="display:none;background:#fff;border-radius:12px;padding:20px;border:1.5px solid #e2e8f0;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px">⚙️ Reconfigurar Google Drive</div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Google Client ID</label>
+        <input type="text" id="drive-reconfig-id" placeholder="000000.apps.googleusercontent.com" style="background:#fff">
+        <small style="color:var(--gray);font-size:11px;margin-top:4px;display:block">Google Cloud Console → APIs → Credenciais → ID do cliente OAuth 2.0</small>
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label>Pasta raiz no Drive</label>
+        <input type="text" id="drive-reconfig-root" placeholder="Gris Contabilidade" style="background:#fff">
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="salvarReconfigDrive()">💾 Salvar e Reconectar</button>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('drive-reconfig-box').style.display='none'">Cancelar</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="dtab-cli-btn" onclick="swDriveTab('cli',this)">👤 Clientes</button>
+      <button class="tab" id="dtab-esc-btn" onclick="swDriveTab('esc',this)">🏢 Escritório</button>
+      <button class="tab" id="dtab-pdf-btn" onclick="swDriveTab('pdf',this)">📄 PDFs Gerados</button>
+    </div>
+    <!-- Clientes -->
+    <div id="dtab-cli" class="tab-content active">
+      <div style="margin-bottom:14px"><label style="font-size:11px;font-weight:600;color:var(--gray);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px">Selecionar cliente</label>
+      <select class="drive-client-select" id="dr-cli-sel" onchange="selCliDrive(this.value)"><option value="">— Selecione um cliente —</option></select></div>
+      <div id="dr-cli-area" style="display:none">
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="criarPastasPOP()">📁 Criar estrutura POP</button>
+          <button class="btn btn-secondary btn-sm" onclick="abrirNoDrive('cli')">🔗 Abrir no Drive</button>
+          <button class="btn btn-secondary btn-sm" onclick="refreshFiles('cli')">🔄 Atualizar</button>
+        </div>
+        <div class="drive-panel">
+          <div class="drive-sidebar-panel"><div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Pastas</div><div id="dr-cli-tree"></div></div>
+          <div class="drive-main-panel">
+            <div class="drive-breadcrumb" id="dr-cli-bc"><span class="dbc-cur">Selecione uma pasta</span></div>
+            <div id="dr-cli-loading" style="display:none;text-align:center;padding:20px;font-size:13px;color:var(--gray)">⏳ Carregando...</div>
+            <div id="dr-cli-files" class="drive-file-list"></div>
+            <div id="dr-cli-empty" style="display:none;text-align:center;padding:20px;color:var(--gray)"><div style="font-size:28px;margin-bottom:8px">📭</div><p style="font-size:13px">Pasta vazia.</p></div>
+            <div class="drive-upload-zone" onclick="document.getElementById('dr-cli-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event,'cli')">
+              <div class="fua-icon">📤</div><p>Clique ou arraste para <strong>fazer upload</strong></p>
+              <input type="file" id="dr-cli-input" multiple style="display:none" onchange="uploadFiles(this.files,'cli')">
+            </div>
+            <div class="upload-progress" id="dr-cli-prog"><div class="upload-progress-fill" id="dr-cli-prog-fill"></div></div>
+            <div id="dr-cli-status" style="font-size:12px;margin-top:6px;display:none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Escritório -->
+    <div id="dtab-esc" class="tab-content">
+      <div class="alert info" style="margin-bottom:14px"><span class="alert-icon">🏢</span><div><strong>Arquivos internos do escritório</strong> Modelos, POPs, planilhas, comunicados e documentos de uso interno da Gris Contabilidade.</div></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="criarPastasEscritorio()">📁 Criar estrutura do escritório</button>
+        <button class="btn btn-secondary btn-sm" onclick="abrirNoDrive('esc')">🔗 Abrir no Drive</button>
+        <button class="btn btn-secondary btn-sm" onclick="refreshFiles('esc')">🔄 Atualizar</button>
+      </div>
+      <div class="drive-panel">
+        <div class="drive-sidebar-panel"><div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Pastas</div><div id="dr-esc-tree"><div style="font-size:12px;color:var(--gray);padding:8px">Conecte ao Drive para ver as pastas</div></div></div>
+        <div class="drive-main-panel">
+          <div class="drive-breadcrumb" id="dr-esc-bc"><span class="dbc-cur">Selecione uma pasta</span></div>
+          <div id="dr-esc-loading" style="display:none;text-align:center;padding:20px;font-size:13px;color:var(--gray)">⏳ Carregando...</div>
+          <div id="dr-esc-files" class="drive-file-list"></div>
+          <div id="dr-esc-empty" style="display:none;text-align:center;padding:20px;color:var(--gray)"><div style="font-size:28px;margin-bottom:8px">📭</div><p style="font-size:13px">Pasta vazia.</p></div>
+          <div class="drive-upload-zone" onclick="document.getElementById('dr-esc-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event,'esc')">
+            <div class="fua-icon">📤</div><p>Clique ou arraste para <strong>fazer upload</strong></p>
+            <input type="file" id="dr-esc-input" multiple style="display:none" onchange="uploadFiles(this.files,'esc')">
+          </div>
+          <div class="upload-progress" id="dr-esc-prog"><div class="upload-progress-fill" id="dr-esc-prog-fill"></div></div>
+          <div id="dr-esc-status" style="font-size:12px;margin-top:6px;display:none"></div>
+        </div>
+      </div>
+    </div>
+    <!-- PDFs -->
+    <div id="dtab-pdf" class="tab-content">
+      <div class="alert info" style="margin-bottom:14px"><span class="alert-icon">📄</span><div><strong>PDFs gerados pelo playbook</strong> Salve processos, CIPs e alterações diretamente no Drive. Configure abaixo a pasta de destino.</div></div>
+      <div style="background:var(--gray-light);border-radius:12px;padding:18px;margin-bottom:16px">
+        <div class="form-row" style="margin-bottom:0">
+          <div class="form-group"><label>Cliente de destino</label><select id="dr-pdf-cli" onchange="loadPdfPastas(this.value)" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:#fff"><option value="">— Selecione —</option></select></div>
+          <div class="form-group"><label>Pasta de destino</label><select id="dr-pdf-pasta" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:#fff"><option value="">— Pasta raiz do cliente —</option></select></div>
+        </div>
+      </div>
+      <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">PDFs salvos nesta sessão</div>
+      <div id="dr-pdfs-lista" class="drive-file-list"><div style="text-align:center;padding:24px;color:var(--gray);font-size:13px"><div style="font-size:28px;margin-bottom:8px">☁️</div><p>Nenhum PDF salvo. Use os botões "☁️ Salvar no Drive" nos processos ou CIP.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CIP -->
+<div id="s-cip" class="section">
+  <div class="sec-header"><div class="sec-tag">Ferramenta</div><h2>Gerar Comunicado Interno (CIP)</h2><p>Comunicado padronizado com geração de PDF e envio por e-mail.</p></div>
+  <div class="cip-form">
+    <div class="cip-header"><h3>Comunicado Interno Padronizado — CIP</h3><p>POP-ADM-001 · Departamento Administrativo</p></div>
+    <div class="form-row">
+      <div class="form-group"><label>Data</label><input type="date" id="cip-data"></div>
+      <div class="form-group"><label>Número do CIP</label><input type="text" id="cip-num" placeholder="001/2026"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Empresa / Cliente</label><input type="text" id="cip-empresa"></div>
+      <div class="form-group"><label>CNPJ</label><input type="text" id="cip-cnpj" oninput="maskCNPJ(this)"></div>
+    </div>
+    <div class="form-group full" style="margin-bottom:14px">
+      <label>Departamentos a notificar</label>
+      <div class="checkbox-group">
+        <label class="checkbox-label"><input type="checkbox" id="cip-fiscal"> 📊 Fiscal</label>
+        <label class="checkbox-label"><input type="checkbox" id="cip-contabil"> 📒 Contábil</label>
+        <label class="checkbox-label"><input type="checkbox" id="cip-dp"> 👥 Depto. Pessoal</label>
+        <label class="checkbox-label"><input type="checkbox" id="cip-gerencia"> 🏢 Gerência</label>
+      </div>
+    </div>
+    <div class="form-group full" style="margin-bottom:14px">
+      <label>Tipo de Alteração</label>
+      <select id="cip-tipo"><option value="">Selecione...</option><option>Entrada de novo cliente</option><option>Saída de cliente</option><option>Alteração de regime tributário</option><option>Alteração de CNAE / atividade</option><option>Alteração de sócios / quadro societário</option><option>Alteração de endereço / filial</option><option>Exclusão do Simples Nacional</option><option>Abertura de filial</option><option>Encerramento / Baixa do CNPJ</option><option>Parcelamento de débitos</option><option>Outro</option></select>
+    </div>
+    <div class="form-group full" style="margin-bottom:14px"><label>Descrição / Detalhes</label><textarea id="cip-desc" placeholder="Descreva os detalhes..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Data de Vigência</label><input type="date" id="cip-vigencia"></div>
+      <div class="form-group"><label>Responsável</label><input type="text" id="cip-resp" placeholder="Nome completo"></div>
+    </div>
+    <div class="form-group full" style="margin-bottom:20px"><label>Ações necessárias pelos departamentos</label><textarea id="cip-acoes" placeholder="Descreva as ações..."></textarea></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="gerarCIP()">📋 Gerar Comunicado</button>
+      <button class="btn btn-secondary" onclick="limparCIP()">🗑️ Limpar</button>
+    </div>
+  </div>
+  <div id="cip-output" style="display:none;margin-top:20px">
+    <div class="alert success"><span class="alert-icon">✅</span><div><strong>Comunicado gerado!</strong> Copie, baixe o PDF ou envie por e-mail.</div></div>
+    <div style="background:#fff;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);font-family:'DM Mono',monospace;font-size:12px;line-height:1.9;white-space:pre-wrap;border:1.5px solid #e2e8f0" id="cip-texto"></div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="copiarCIP()">📋 Copiar</button>
+      <button class="btn btn-secondary" onclick="baixarCIP()">⬇️ Baixar PDF</button>
+      <button class="btn btn-secondary" style="background:var(--green-light);color:#065f46;border:1.5px solid var(--green)" onclick="salvarCIPDrive()">☁️ Salvar no Drive</button>
+      <button class="btn btn-purple" onclick="emailCIPToggle()">📧 Enviar por E-mail</button>
+    </div>
+    <div id="cip-email-box" style="display:none;margin-top:16px;background:#fff;border-radius:var(--radius);padding:24px;border:1.5px solid #e2e8f0">
+      <div class="email-from"><span class="ef-label">De:</span><span class="ef-addr">adm@griscontabil.com.br</span></div>
+      <div class="form-group" style="margin-bottom:12px"><label>Para</label><input type="text" id="cip-email-para" placeholder="email@destino.com"></div>
+      <div class="form-group" style="margin-bottom:12px"><label>Assunto</label><input type="text" id="cip-email-assunto"></div>
+      <div class="form-group" style="margin-bottom:16px"><label>Mensagem adicional</label><textarea id="cip-email-msg" placeholder="Complemento opcional..."></textarea></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-success btn-sm" onclick="enviarCIPEmail()">📨 Enviar</button>
+        <button class="btn btn-secondary btn-sm" onclick="emailCIPToggle()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div id="s-kpis" class="section">
+  <div class="sec-header"><div class="sec-tag">Indicadores</div><h2>KPIs do Departamento</h2><p>Indicadores estabelecidos no POP-ADM-001.</p></div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Tempo médio de onboarding</div><div class="kpi-value">≤ 5</div><div class="kpi-meta">dias úteis · Meta máxima</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:80%"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">Certidões vencidas</div><div class="kpi-value" style="color:var(--green)">0</div><div class="kpi-meta">Meta: zero · Semanal</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%;background:var(--green)"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">CIPs emitidos no prazo</div><div class="kpi-value">100%</div><div class="kpi-meta">Meta: 100% · Mensal</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">Procurações vencidas</div><div class="kpi-value" style="color:var(--green)">0</div><div class="kpi-meta">Meta: zero · Mensal</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%;background:var(--green)"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">Saídas concluídas no prazo</div><div class="kpi-value">≥ 95%</div><div class="kpi-meta">Meta mínima · Trimestral</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:95%"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">Cadastros completos</div><div class="kpi-value">100%</div><div class="kpi-meta">Sem pendências · Mensal</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%"></div></div></div>
+  </div>
+  <div class="alert info"><span class="alert-icon">📊</span><div><strong>Revisão dos indicadores</strong> Mensalmente pelo Coordenador Administrativo, apresentados à gerência trimestralmente.</div></div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-processo"><div class="modal"><div class="modal-icon">🚀</div><h3>Processo Gerado!</h3><p>O processo completo para <strong id="mp-nome"></strong> foi criado com sucesso.</p><div class="modal-actions"><button class="btn btn-primary" onclick="irProcesso()">Ver Processo →</button><button class="btn btn-secondary" onclick="closeModal('modal-processo')">Fechar</button></div></div></div>
+<div class="modal-overlay" id="modal-email-ok"><div class="modal"><div class="modal-icon">📨</div><h3>E-mail Pronto!</h3><p id="modal-email-msg">O e-mail foi aberto com o PDF gerado. Anexe o arquivo antes de enviar.</p><div class="modal-actions"><button class="btn btn-primary" onclick="closeModal('modal-email-ok')">OK</button></div></div></div>
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal-large">
+    <div class="modal-large-header"><div><h3>✏️ Editar Cadastro</h3><p id="modal-edit-sub">Atualize os dados do cliente</p></div><span class="modal-large-close" onclick="closeModal('modal-editar')">✕</span></div>
+    <div class="modal-large-body">
+      <div class="tabs" style="margin-bottom:20px">
+        <button class="tab active" onclick="swTab('medit','dados',this)">📋 Dados</button>
+        <button class="tab" onclick="swTab('medit','contatos',this)">👥 Contatos</button>
+      </div>
+      <div id="medit-dados" class="tab-content active">
+        <div class="form-section-title" style="margin-top:0">Identificação</div>
+        <div class="form-row"><div class="form-group"><label>Razão Social *</label><input type="text" id="e-razao"></div><div class="form-group"><label>Nome Fantasia</label><input type="text" id="e-fantasia"></div></div>
+        <div class="form-row"><div class="form-group"><label>CNPJ</label><input type="text" id="e-cnpj" oninput="maskCNPJ(this)"></div><div class="form-group"><label>Tipo Societário</label><select id="e-tpsoc"><option value="">Selecione...</option><option>MEI</option><option>Empresário Individual (EI)</option><option>EIRELI</option><option>Ltda.</option><option>S/A</option><option>Associação / Fundação</option><option>Outro</option></select></div></div>
+        <div class="form-row"><div class="form-group"><label>Regime Tributário</label><select id="e-regime"><option value="">A definir</option><option>MEI</option><option>Simples Nacional</option><option>Lucro Presumido</option><option>Lucro Real</option></select></div><div class="form-group"><label>Responsável</label><input type="text" id="e-resp"></div></div>
+        <div class="form-section-title">Contato Principal</div>
+        <div class="form-row"><div class="form-group"><label>Sócio / Contato</label><input type="text" id="e-socio"></div><div class="form-group"><label>E-mail</label><input type="email" id="e-email"></div></div>
+        <div class="form-row"><div class="form-group"><label>Telefone</label><input type="text" id="e-tel"></div><div class="form-group"><label>Escritório de Origem</label><input type="text" id="e-origem"></div></div>
+        <div class="form-group full" style="margin-bottom:20px"><label>Observações</label><textarea id="e-obs"></textarea></div>
+      </div>
+      <div id="medit-contatos" class="tab-content">
+        <p style="font-size:13px;color:var(--gray);margin-bottom:14px">Adicione todos os contatos vinculados ao cliente.</p>
+        <div id="contatos-lista"></div>
+        <button class="btn btn-secondary btn-sm" onclick="toggleAddContato()" style="margin-bottom:8px">➕ Adicionar Contato</button>
+        <div id="add-contato-form" class="add-contato-form">
+          <div class="form-row"><div class="form-group"><label>Nome *</label><input type="text" id="nc-nome"></div><div class="form-group"><label>Cargo / Função</label><input type="text" id="nc-cargo"></div></div>
+          <div class="form-row"><div class="form-group"><label>E-mail</label><input type="email" id="nc-email"></div><div class="form-group"><label>Telefone</label><input type="text" id="nc-tel"></div></div>
+          <div style="display:flex;gap:8px"><button class="btn btn-primary btn-sm" onclick="addContato()">✓ Salvar</button><button class="btn btn-secondary btn-sm" onclick="toggleAddContato()">Cancelar</button></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal('modal-editar')">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicao()">💾 Salvar Alterações</button></div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-excluir"><div class="modal"><div class="modal-icon">🔒</div><h3>Excluir Cliente</h3><p>Digite a senha para confirmar a exclusão de <strong id="excl-nome"></strong>.</p><div class="senha-input-wrap"><input type="password" id="senha-input" maxlength="10" placeholder="••••" onkeydown="if(event.key==='Enter')confirmarExclusao()"></div><p class="senha-error" id="senha-error">Senha incorreta.</p><div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-excluir')">Cancelar</button><button class="btn btn-danger" onclick="confirmarExclusao()">🗑️ Excluir</button></div></div></div>
+<div class="modal-overlay" id="modal-fase-edit"><div class="modal-fase"><div class="modal-fase-header"><h4 id="mfe-header">Editar</h4><span class="mfh-close" onclick="closeModal('modal-fase-edit')">✕</span></div><div class="modal-fase-body"><div class="form-group" style="margin-bottom:14px"><label>Título *</label><input type="text" id="mfe-titulo" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none"></div><div class="form-group" id="mfe-desc-grp" style="margin-bottom:18px;display:none"><label>Descrição</label><textarea id="mfe-desc" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;resize:vertical;min-height:60px"></textarea></div><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn btn-secondary btn-sm" onclick="closeModal('modal-fase-edit')">Cancelar</button><button class="btn btn-primary btn-sm" onclick="salvarFaseEdit()">💾 Salvar</button></div></div></div></div>
+<script>
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let tipoAtual = null;
+let clienteAtual = null;
+let clientes = [];
+let clienteExcluir = null;
+let clienteEditar = null;
+let modoProcesso = 'entrada';
+let editMode = {}; // key: `${cid}_${modo}`
+let faseEditCtx = null;
+let cnpjDados = null;
+let driveTk = null;
+let driveRootId = null;
+let driveEscId = null;
+let driveCurFolder = { cli: null, esc: null };
+let driveBc = { cli: [], esc: [] };
+let driveCurCli = null;
+let drivePDFs = [];
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+const LABELS = {
+  home:'Visão Geral', cadastro:'Cadastrar Cliente', lista:'Clientes Cadastrados',
+  processo:'Processo do Cliente', entrada:'Entrada de Clientes', onboarding:'Onboarding',
+  procuracao:'Procuração Eletrônica', cadastros:'Cadastros nos Sistemas',
+  nuvem:'Documentos na Nuvem', debitos:'Levantamento de Débitos',
+  saida:'Saída de Clientes', comunicacao:'Comunicação Interna',
+  drive:'Documentos (Drive)', cip:'Gerar Comunicado (CIP)', kpis:'Indicadores (KPIs)'
+};
+
+function nav(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const sec = document.getElementById('s-' + id);
+  if (sec) sec.classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('bc').textContent = LABELS[id] || id;
+  if (id === 'drive') initDrive();
+  if (id === 'lista') renderLista();
+  if (id === 'cip') { document.getElementById('cip-data').value = today(); }
+}
+
+function swTab(prefix, name, el) {
+  const allTabs = el.closest('.tabs').querySelectorAll('.tab');
+  const allContents = document.querySelectorAll('[id^="' + prefix + '-"]');
+  allTabs.forEach(t => t.classList.remove('active'));
+  allContents.forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const cnt = document.getElementById(prefix + '-' + name);
+  if (cnt) cnt.classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
+function today() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(d) { if (!d) return '—'; const p = d.split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : d; }
+function maskCNPJ(el) {
+  let v = el.value.replace(/\D/g,'').substring(0,14);
+  v = v.replace(/^(\d{2})(\d)/,'$1.$2');
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3');
+  v = v.replace(/\.(\d{3})(\d)/,'.$1/$2');
+  v = v.replace(/(\d{4})(\d)/,'$1-$2');
+  el.value = v;
+}
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function toast(msg, color) {
+  const t = document.createElement('div');
+  t.className = 'drive-toast';
+  t.style.background = color || '#065f46';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ══════════════════════════════════════════════
+// GENERIC STEP/CHECK TOGGLES
+// ══════════════════════════════════════════════
+function togStep(el) {
+  el.classList.toggle('done');
+  el.querySelector('.step-check').textContent = el.classList.contains('done') ? '✓' : '';
+}
+function togCheck(el, listId) {
+  el.classList.toggle('checked');
+  el.querySelector('.check-box').textContent = el.classList.contains('checked') ? '✓' : '';
+  if (listId === 'onb') updateOnbProgress();
+}
+function updateOnbProgress() {
+  const items = document.querySelectorAll('#onb-list .check-item');
+  const done = document.querySelectorAll('#onb-list .check-item.checked').length;
+  const pct = Math.round(done/items.length*100);
+  document.getElementById('onb-bar').style.width = pct + '%';
+  document.getElementById('onb-pct').textContent = done + ' / ' + items.length;
+}
+
+// ══════════════════════════════════════════════
+// CNPJ LOOKUP
+// ══════════════════════════════════════════════
+async function consultarCNPJ() {
+  const raw = document.getElementById('cnpj-busca').value.replace(/\D/g,'');
+  const statusEl = document.getElementById('cnpj-status');
+  const previewEl = document.getElementById('cnpj-preview');
+  const btn = document.getElementById('btn-consultar');
+  if (raw.length !== 14) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:var(--red)">⚠️ CNPJ inválido — informe 14 dígitos.</span>';
+    return;
+  }
+  btn.textContent = '⏳ Consultando...'; btn.disabled = true;
+  statusEl.style.display = 'block'; statusEl.innerHTML = '<span style="color:var(--blue)">🔄 Consultando a Receita Federal...</span>';
+  previewEl.style.display = 'none';
+  try {
+    const res = await fetch('https://publica.cnpj.ws/cnpj/' + raw, { headers: { 'Accept': 'application/json' } });
+    if (res.status === 404) { statusEl.innerHTML = '<span style="color:var(--red)">❌ CNPJ não encontrado.</span>'; btn.textContent='🔍 Consultar'; btn.disabled=false; return; }
+    if (res.status === 429) { statusEl.innerHTML = '<span style="color:var(--gold)">⏳ Limite atingido. Aguarde 1 minuto.</span>'; btn.textContent='🔍 Consultar'; btn.disabled=false; return; }
+    if (!res.ok) throw new Error('Erro ' + res.status);
+    const d = await res.json();
+    cnpjDados = d;
+    const end = d.estabelecimento;
+    const situacao = end?.situacao_cadastral || '—';
+    const { regime, regimeLabel } = detectarRegime(d);
+    const natureza = d.natureza_juridica?.descricao || '';
+    const socios = d.socios || [];
+    const cnae = end?.atividade_principal;
+    const endStr = end ? [end.tipo_logradouro,end.logradouro,end.numero,end.complemento,end.bairro,end.cidade?.nome,end.estado?.sigla,end.cep].filter(Boolean).join(', ') : '';
+    const capital = d.capital_social ? 'R$ ' + parseFloat(d.capital_social).toLocaleString('pt-BR',{minimumFractionDigits:2}) : '';
+    const rows = [
+      ['Razão Social', d.razao_social],
+      ['Nome Fantasia', end?.nome_fantasia],
+      ['CNPJ', raw.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5')],
+      ['Natureza Jurídica', natureza],
+      ['Tipo Societário', mapNatureza(natureza)],
+      ['Regime Tributário', regimeLabel],
+      ['CNAE Principal', cnae ? cnae.id + ' — ' + cnae.descricao : ''],
+      ['Porte', d.porte?.descricao],
+      ['Capital Social', capital],
+      ['Situação Cadastral', situacao],
+      ['Endereço', endStr],
+      ['1º Sócio (QSA)', socios[0]?.nome],
+    ].filter(r=>r[1]).map(r =>
+      '<div style="display:flex;gap:8px;border-bottom:1px solid #f1f5f9;padding:3px 0">'
+      +'<span style="font-size:11px;font-family:\'DM Mono\',monospace;color:var(--gray);min-width:160px;flex-shrink:0">'+r[0]+'</span>'
+      +'<span style="font-size:12px;font-weight:500;color:var(--text)">'+esc(r[1])+'</span></div>'
+    ).join('');
+    document.getElementById('cnpj-dados').innerHTML = rows;
+    previewEl.style.display = 'block';
+    const cor = situacao.toLowerCase().includes('ativa') ? 'var(--green)' : 'var(--gold)';
+    statusEl.innerHTML = '<span style="color:'+cor+'">✅ CNPJ encontrado — situação: <strong>'+esc(situacao)+'</strong></span>';
+  } catch(e) {
+    statusEl.innerHTML = '<span style="color:var(--red)">❌ Falha na conexão. Verifique sua internet.</span>';
+  }
+  btn.textContent = '🔍 Consultar'; btn.disabled = false;
+}
+
+function confirmarCNPJ() {
+  if (!cnpjDados) return;
+  const d = cnpjDados;
+  const end = d.estabelecimento;
+  const socios = d.socios || [];
+  const { regime } = detectarRegime(d);
+  const natureza = d.natureza_juridica?.descricao || '';
+  const raw = document.getElementById('cnpj-busca').value.replace(/\D/g,'');
+  const fmt = raw.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5');
+  const s = (id, v) => { const el=document.getElementById(id); if(el&&v) el.value=v; };
+  s('c-razao', d.razao_social||'');
+  s('c-fantasia', end?.nome_fantasia||'');
+  s('c-cnpj', fmt);
+  if (socios.length > 0) s('c-socio', socios[0]?.nome||'');
+  // Tipo societário
+  const tipo = mapNatureza(natureza);
+  const tpEl = document.getElementById('c-tpsoc');
+  if (tpEl && tipo) for (const o of tpEl.options) if (o.value===tipo) { tpEl.value=tipo; break; }
+  // Regime
+  const rgEl = document.getElementById('c-regime');
+  if (rgEl && regime) for (const o of rgEl.options) if (o.value===regime) { rgEl.value=regime; break; }
+  // Observações
+  const cnae = end?.atividade_principal;
+  const endStr = end ? [end.tipo_logradouro,end.logradouro,end.numero,end.complemento,end.bairro,end.cidade?.nome,end.estado?.sigla,end.cep].filter(Boolean).join(', ') : '';
+  const capital = d.capital_social ? 'R$ '+parseFloat(d.capital_social).toLocaleString('pt-BR',{minimumFractionDigits:2}) : '';
+  const obs = [
+    cnae ? 'CNAE Principal: '+cnae.id+' — '+cnae.descricao : '',
+    endStr ? 'Endereço: '+endStr : '',
+    end?.situacao_cadastral ? 'Situação: '+end.situacao_cadastral : '',
+    d.porte?.descricao ? 'Porte: '+d.porte.descricao : '',
+    capital ? 'Capital Social: '+capital : '',
+    socios.length>1 ? 'QSA: '+socios.map(s=>s.nome).join(' | ') : '',
+    natureza ? 'Natureza Jurídica: '+natureza : '',
+  ].filter(Boolean).join('\n');
+  s('c-obs', obs);
+  document.getElementById('cnpj-preview').style.display = 'none';
+  document.getElementById('cnpj-status').innerHTML = '<span style="color:var(--green)">✅ Formulário preenchido! Revise antes de salvar.</span>';
+  document.getElementById('c-razao').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function detectarRegime(d) {
+  if (d.simei?.optante===true) return { regime:'MEI', regimeLabel:'MEI ✅ (confirmado pela Receita)' };
+  if (d.simples?.optante===true) return { regime:'Simples Nacional', regimeLabel:'Simples Nacional ✅ (confirmado pela Receita)' };
+  const porte = (d.porte?.descricao||'').toUpperCase();
+  const capital = parseFloat(d.capital_social||0);
+  const nat = (d.natureza_juridica?.descricao||'').toLowerCase();
+  if (nat.includes('associação')||nat.includes('fundação')||nat.includes('oscip')) return { regime:'', regimeLabel:'Entidade sem fins lucrativos — verificar' };
+  if (porte==='DEMAIS'||capital>=78000000) return { regime:'Lucro Real', regimeLabel:'Lucro Real ⚠️ sugestão por porte (confirmar)' };
+  if (porte.includes('EPP')||porte.includes('PEQUENA')) return { regime:'Lucro Presumido', regimeLabel:'Lucro Presumido ⚠️ sugestão por porte EPP (confirmar)' };
+  if (porte.includes('ME')||porte.includes('MICRO')) return { regime:'Simples Nacional', regimeLabel:'Simples Nacional ⚠️ sugestão por porte ME (verificar)' };
+  return { regime:'Lucro Presumido', regimeLabel:'Lucro Presumido ⚠️ sugestão padrão (confirmar)' };
+}
+
+function mapNatureza(desc) {
+  const d = (desc||'').toLowerCase();
+  if (d.includes('microempreendedor')) return 'MEI';
+  if (d.includes('empresário individual')&&!d.includes('eireli')) return 'Empresário Individual (EI)';
+  if (d.includes('eireli')) return 'EIRELI';
+  if (d.includes('limitada')||d.includes('ltda')) return 'Ltda.';
+  if (d.includes('anônima')||d.includes('s/a')||d.includes('s.a.')) return 'S/A';
+  if (d.includes('associação')||d.includes('fundação')||d.includes('oscip')) return 'Associação / Fundação';
+  return 'Outro';
+}
+
+// ══════════════════════════════════════════════
+// TIPO SELETOR
+// ══════════════════════════════════════════════
+function selTipo(t) {
+  tipoAtual = t;
+  document.querySelectorAll('.tipo-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('[id^="chk-"]').forEach(c => c.textContent = '');
+  document.getElementById('tipo-' + t).classList.add('selected');
+  document.getElementById('chk-' + t).textContent = '✓';
+  document.getElementById('aviso-tipo').style.display = 'none';
+}
+
+function avancarCadastro() {
+  if (!tipoAtual) { document.getElementById('aviso-tipo').style.display = 'flex'; return; }
+  document.getElementById('cad-step1').style.display = 'none';
+  document.getElementById('cad-step2').classList.add('visible');
+  document.getElementById('c-data').value = today();
+  const badge = document.getElementById('tipo-badge-show');
+  badge.innerHTML = tipoAtual==='novo'
+    ? '<span class="tipo-badge novo">🆕 CNPJ Novo</span>'
+    : '<span class="tipo-badge migracao">🔄 Transferência de Escritório</span>';
+  document.getElementById('g-cnpj').querySelector('label').textContent = tipoAtual==='novo' ? 'CNPJ (será gerado)' : 'CNPJ *';
+  document.getElementById('c-cnpj').placeholder = tipoAtual==='novo' ? 'Deixe em branco se ainda não gerado' : '00.000.000/0000-00';
+  document.getElementById('g-origem').style.display = tipoAtual==='migracao' ? 'flex' : 'none';
+  // Mostrar consulta CNPJ para ambos os tipos (migração e novo)
+  document.getElementById('cnpj-lookup-box').style.display = 'block';
+  const lookupNote = document.getElementById('cnpj-lookup-note');
+  if (lookupNote) lookupNote.textContent = tipoAtual==='novo'
+    ? 'Opcional para CNPJ Novo: consulte se o CNPJ já foi gerado.'
+    : 'Consulte o CNPJ para preenchimento automático dos dados.';
+}
+
+function voltarTipo() {
+  document.getElementById('cad-step1').style.display = 'block';
+  document.getElementById('cad-step2').classList.remove('visible');
+}
+
+function limparFormCad() {
+  ['c-razao','c-fantasia','c-cnpj','c-socio','c-email','c-tel','c-resp','c-obs','c-origem','cnpj-busca'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('c-tpsoc').value = '';
+  document.getElementById('c-regime').value = '';
+  document.getElementById('c-data').value = today();
+  document.getElementById('cnpj-status').style.display = 'none';
+  document.getElementById('cnpj-preview').style.display = 'none';
+}
+
+// ══════════════════════════════════════════════
+// SALVAR CLIENTE
+// ══════════════════════════════════════════════
+function salvarCliente() {
+  const razao = document.getElementById('c-razao').value.trim();
+  if (!razao) { alert('Informe a Razão Social.'); return; }
+  const c = {
+    id: Date.now(),
+    tipo: tipoAtual,
+    razao, fantasia: document.getElementById('c-fantasia').value.trim(),
+    cnpj: document.getElementById('c-cnpj').value.trim(),
+    tpSoc: document.getElementById('c-tpsoc').value,
+    regime: document.getElementById('c-regime').value,
+    resp: document.getElementById('c-resp').value.trim(),
+    socio: document.getElementById('c-socio').value.trim(),
+    email: document.getElementById('c-email').value.trim(),
+    tel: document.getElementById('c-tel').value.trim(),
+    dataEntrada: document.getElementById('c-data').value,
+    origem: document.getElementById('c-origem').value.trim(),
+    obs: document.getElementById('c-obs').value.trim(),
+    contatos: [],
+    customFases: {},
+    stateEntrada: {}, stateAlt: {}, stateSaida: {},
+    histAlt: []
+  };
+  clientes.push(c);
+  clienteAtual = c;
+  atualizarBadge();
+  // Reset form
+  limparFormCad();
+  tipoAtual = null;
+  document.querySelectorAll('.tipo-card').forEach(x => x.classList.remove('selected'));
+  document.querySelectorAll('[id^="chk-"]').forEach(x => x.textContent='');
+  document.getElementById('cad-step2').classList.remove('visible');
+  document.getElementById('cad-step1').style.display = 'block';
+  document.getElementById('aviso-tipo').style.display = 'none';
+  document.getElementById('mp-nome').textContent = razao;
+  openModal('modal-processo');
+}
+
+function irProcesso() {
+  closeModal('modal-processo');
+  renderProcesso(clienteAtual, 'entrada');
+  nav('processo', null);
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+}
+
+function atualizarBadge() {
+  const n = clientes.length;
+  document.getElementById('badge-count').textContent = n;
+  document.getElementById('badge-count').style.display = n>0 ? 'inline' : 'none';
+  document.getElementById('stat-cli').textContent = n;
+  if (document.getElementById('dr-cli-sel')) popularDriveSels();
+}
+
+// ══════════════════════════════════════════════
+// LISTA DE CLIENTES
+// ══════════════════════════════════════════════
+function renderLista() {
+  const empty = document.getElementById('lista-empty');
+  const items = document.getElementById('lista-items');
+  if (clientes.length === 0) { empty.style.display = 'block'; items.innerHTML = ''; return; }
+  empty.style.display = 'none';
+  items.innerHTML = clientes.map(c => {
+    const fe = getFases(c,'entrada'), fs = getFases(c,'saida'), fa = getFases(c,'alt');
+    const te = fe.reduce((a,f)=>a+f.steps.length,0), ts = fs.reduce((a,f)=>a+f.steps.length,0), ta = fa.reduce((a,f)=>a+f.steps.length,0);
+    const de = Object.values(c.stateEntrada||{}).filter(v=>v).length;
+    const ds = Object.values(c.stateSaida||{}).filter(v=>v).length;
+    const da = Object.values(c.stateAlt||{}).filter(v=>v).length;
+    const pe = te?Math.round(de/te*100):0, ps = ts?Math.round(ds/ts*100):0, pa = ta?Math.round(da/ta*100):0;
+    return `<div class="client-card">
+      <div class="client-card-top" onclick="abrirProcesso(${c.id},'entrada')">
+        <div class="cci-icon" style="background:${c.tipo==='novo'?'var(--sky)':'var(--purple-light)'}">${c.tipo==='novo'?'🆕':'🔄'}</div>
+        <div class="cci-info">
+          <div class="cci-name">${esc(c.razao)}${c.fantasia?' <span style="font-weight:400;color:var(--gray)">('+esc(c.fantasia)+')</span>':''}</div>
+          <div class="cci-meta">${esc(c.cnpj||'CNPJ a definir')} · ${esc(c.resp||'—')} · ${fmtDate(c.dataEntrada)}</div>
+        </div>
+        <span class="badge ${c.tipo==='novo'?'badge-blue':'badge-purple'}">${c.tipo==='novo'?'CNPJ Novo':'Transferência'}</span>
+      </div>
+      <div class="cci-bars">
+        <div class="cci-bar-item"><div class="cci-bar-label">Entrada · ${pe}%</div><div class="cci-bar-track"><div class="cci-bar-fill" style="width:${pe}%;background:var(--blue)"></div></div></div>
+        <div class="cci-bar-item"><div class="cci-bar-label">Alteração · ${pa}%</div><div class="cci-bar-track"><div class="cci-bar-fill" style="width:${pa}%;background:var(--gold)"></div></div></div>
+        <div class="cci-bar-item"><div class="cci-bar-label">Saída · ${ps}%</div><div class="cci-bar-track"><div class="cci-bar-fill" style="width:${ps}%;background:var(--red)"></div></div></div>
+      </div>
+      <div class="cci-actions-row">
+        <button class="btn-xs btn-xs-blue" onclick="event.stopPropagation();abrirProcesso(${c.id},'entrada')">📋 Entrada</button>
+        <button class="btn-xs btn-xs-gold" onclick="event.stopPropagation();abrirProcesso(${c.id},'alt')">✏️ Alteração</button>
+        <button class="btn-xs btn-xs-red" onclick="event.stopPropagation();abrirProcesso(${c.id},'saida')">🚪 Saída</button>
+        <button class="btn-xs btn-xs-blue" onclick="event.stopPropagation();abrirEditar(${c.id})">✏️ Editar</button>
+        <button class="btn-xs btn-xs-red" onclick="event.stopPropagation();abrirExcluir(${c.id})">🗑️ Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function abrirProcesso(id, modo) {
+  clienteAtual = clientes.find(c => c.id===id);
+  if (!clienteAtual) return;
+  renderProcesso(clienteAtual, modo);
+  nav('processo', null);
+}
+
+// ══════════════════════════════════════════════
+// PROCESSO
+// ══════════════════════════════════════════════
+function setModo(modo) {
+  modoProcesso = modo;
+  ['entrada','alteracao','saida'].forEach(m => {
+    document.getElementById('pmt-' + (m==='alteracao'?'alteracao':m)).classList.toggle('active', m===modo || (modo==='alt'&&m==='alteracao'));
+    document.getElementById('proc-' + (m==='alteracao'?'alteracao':m)).style.display = (m===modo || (modo==='alt'&&m==='alteracao')) ? 'block' : 'none';
+  });
+}
+
+function renderProcesso(c, modo) {
+  modoProcesso = modo;
+  document.getElementById('pc-tag').textContent = c.tipo==='migracao' ? 'Transferência de Escritório' : 'CNPJ Novo';
+  document.getElementById('pc-title').textContent = c.razao;
+  document.getElementById('pc-desc').textContent = 'Alterne entre Entrada, Alteração e Saída acima. ✏️ Editar fases para personalizar.';
+  renderFasesHTML(c, 'entrada', document.getElementById('proc-entrada'));
+  renderFasesHTML(c, 'alt', document.getElementById('proc-alteracao'));
+  renderFasesHTML(c, 'saida', document.getElementById('proc-saida'));
+  // show/hide tabs
+  document.getElementById('pmt-entrada').classList.toggle('active', modo==='entrada');
+  document.getElementById('pmt-alteracao').classList.toggle('active', modo==='alt'||modo==='alteracao');
+  document.getElementById('pmt-saida').classList.toggle('active', modo==='saida');
+  document.getElementById('proc-entrada').style.display = modo==='entrada'?'block':'none';
+  document.getElementById('proc-alteracao').style.display = (modo==='alt'||modo==='alteracao')?'block':'none';
+  document.getElementById('proc-saida').style.display = modo==='saida'?'block':'none';
+}
+
+function renderFasesHTML(c, modo, wrap) {
+  if (!wrap) return;
+  const fases = getFases(c, modo);
+  const stateKey = modo==='saida'?'stateSaida':modo==='alt'?'stateAlt':'stateEntrada';
+  const total = fases.reduce((a,f)=>a+f.steps.length,0);
+  const done = Object.values(c[stateKey]||{}).filter(v=>v).length;
+  const pct = total?Math.round(done/total*100):0;
+  const editKey = c.id+'_'+modo;
+  const editing = !!editMode[editKey];
+  const isAlt = modo==='alt';
+  const isSaida = modo==='saida';
+  const headerColor = isSaida?'background:linear-gradient(135deg,#7f1d1d,#991b1b)':isAlt?'background:linear-gradient(135deg,#78350f,#92400e)':'';
+  const tagText = isSaida?'Processo de Saída':isAlt?'Processo de Alteração':'Processo de Entrada';
+  const badgeClass = isSaida?'style="background:var(--red-light);color:#991b1b"':isAlt?'style="background:var(--gold-light);color:#78350f"':c.tipo==='migracao'?'class="tipo-badge migracao"':'class="tipo-badge novo"';
+  const badgeText = isSaida?'🚪 Saída/Encerramento':isAlt?'✏️ Alteração':c.tipo==='migracao'?'🔄 Transferência':'🆕 CNPJ Novo';
+  const barColor = isSaida?'var(--red)':isAlt?'var(--gold)':'';
+  let html = `<div class="processo-header" style="${headerColor}">
+    <div class="ph-tag">${tagText}</div>
+    <h3>${esc(c.razao)}</h3>
+    <div class="ph-meta">${esc(c.cnpj||'CNPJ a definir')} · Entrada: ${fmtDate(c.dataEntrada)}</div>
+    <button class="btn-edit-mode${editing?' on':''}" onclick="toggleEditMode('${c.id}','${modo}')">
+      ${editing?'✅ Edição ativa':'✏️ Editar fases'}
+    </button>
+  </div>
+  <div class="processo-body">
+    <span ${badgeClass}>${badgeText}</span>
+    ${renderInfoStrip(c)}
+    ${renderContatosStrip(c)}
+    ${isAlt ? renderAltBox(c) : ''}
+    <div class="proc-prog">
+      <span class="pp-label">Progresso</span>
+      <div class="pp-wrap"><div class="pp-bar"><div class="pp-fill" style="width:${pct}%;${barColor?'background:'+barColor:''}"></div></div></div>
+      <span class="pp-pct">${done}/${total} (${pct}%)</span>
+    </div>`;
+  fases.forEach((fase, fi) => {
+    html += renderFaseBlock(fase, fi, c, modo, editing);
+  });
+  if (editing) {
+    html += `<button class="btn-add-fase" onclick="addFase('${c.id}','${modo}')">➕ Adicionar nova fase</button>`;
+  }
+  html += renderEmailBox(c, modo);
+  if (c.obs) html += `<div class="alert info" style="margin-top:16px"><span class="alert-icon">📝</span><div><strong>Observações</strong><br>${esc(c.obs)}</div></div>`;
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function renderInfoStrip(c) {
+  const items = [
+    c.cnpj && ['CNPJ', c.cnpj],
+    c.tpSoc && ['Tipo', c.tpSoc],
+    c.regime && ['Regime', c.regime],
+    c.resp && ['Responsável Gris', c.resp],
+    c.socio && ['Contato', c.socio],
+    c.email && ['E-mail', c.email],
+    c.tel && ['Telefone', c.tel],
+    c.origem && ['Escritório de Origem', c.origem],
+  ].filter(Boolean);
+  if (!items.length) return '';
+  return '<div class="info-strip">' + items.map(([l,v]) =>
+    '<div class="info-item"><div class="ii-label">'+l+'</div><div class="ii-value">'+esc(v)+'</div></div>'
+  ).join('') + '</div>';
+}
+
+function renderContatosStrip(c) {
+  if (!c.contatos || !c.contatos.length) return '';
+  return '<div style="margin-bottom:14px"><div class="form-section-title" style="margin-top:0">Contatos do Cliente</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:8px">'
+    + c.contatos.map(ct =>
+        '<div style="background:var(--gray-light);border-radius:8px;padding:8px 12px;font-size:12px">'
+        + '<strong>'+esc(ct.nome)+'</strong>'+(ct.cargo?' · <span style="color:var(--blue)">'+esc(ct.cargo)+'</span>':'')
+        + (ct.email?'<br><span style="color:var(--gray)">'+esc(ct.email)+'</span>':'')
+        + (ct.tel?' · <span style="color:var(--gray)">'+esc(ct.tel)+'</span>':'')
+        + '</div>'
+    ).join('')
+    + '</div></div>';
+}
+
+function renderAltBox(c) {
+  const hist = c.histAlt || [];
+  return `<div class="alt-reg-box">
+    <div style="font-size:13px;font-weight:600;color:#78350f;margin-bottom:12px">📋 Registrar Nova Alteração</div>
+    <div class="form-row" style="margin-bottom:10px">
+      <div class="form-group"><label>Tipo de Alteração *</label>
+        <select id="alt-tipo-${c.id}">
+          <option value="">Selecione...</option>
+          <option>Entrada de sócio</option><option>Saída de sócio</option>
+          <option>Alteração de quotas</option><option>Alteração de CNAE</option>
+          <option>Alteração de Razão Social</option><option>Alteração de Endereço</option>
+          <option>Alteração de Regime Tributário</option><option>Abertura de Filial</option>
+          <option>Alteração de Capital Social</option><option>Alteração de Objeto Social</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Responsável</label><input type="text" id="alt-resp-${c.id}" value="${esc(c.resp||'')}"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px"><label>Descrição / Detalhes</label><textarea id="alt-desc-${c.id}" style="min-height:70px" placeholder="Ex: Entrada do sócio João Silva..."></textarea></div>
+    <div class="form-row" style="margin-bottom:0">
+      <div class="form-group"><label>Data de vigência</label><input type="date" id="alt-data-${c.id}" value="${today()}"></div>
+      <div class="form-group" style="align-self:flex-end"><button class="btn btn-primary btn-sm" onclick="registrarAlt('${c.id}')">✓ Registrar</button></div>
+    </div>
+    ${hist.length ? '<div class="divider" style="margin:14px 0"></div><div style="font-size:11px;font-family:\'DM Mono\',monospace;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Histórico</div>'
+      + hist.map(h => '<div class="hist-item"><span style="color:var(--gold)">✏️</span><div><strong>'+esc(h.tipo)+'</strong> — '+esc(h.desc||'—')+'<br><span style="color:var(--gray)">'+h.data+' · '+esc(h.resp||'—')+'</span></div></div>').join('')
+      : ''}
+  </div>`;
+}
+
+function registrarAlt(cid) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  const tipo = document.getElementById('alt-tipo-'+cid).value;
+  if (!tipo) { alert('Selecione o tipo de alteração.'); return; }
+  if (!c.histAlt) c.histAlt = [];
+  c.histAlt.unshift({ tipo, desc: document.getElementById('alt-desc-'+cid).value.trim(), resp: document.getElementById('alt-resp-'+cid).value.trim(), data: fmtDate(document.getElementById('alt-data-'+cid).value) });
+  c.stateAlt = {}; // reset checklist
+  renderProcesso(c, 'alt');
+  renderLista();
+}
+
+function renderEmailBox(c, modo) {
+  return `<div class="divider"></div>
+  <div class="email-section">
+    <div class="email-header"><div class="eh-icon">📧</div><div><h4>Enviar E-mail ao Cliente</h4><p>Boas-vindas, comunicados ou documentos com PDF</p></div></div>
+    <div class="email-body">
+      <div class="email-from"><span class="ef-label">De:</span><span class="ef-addr">adm@griscontabil.com.br</span></div>
+      <div class="form-row">
+        <div class="form-group"><label>Para</label><input type="email" id="eml-para-${c.id}-${modo}" value="${esc(c.email||'')}" placeholder="email@cliente.com"></div>
+        <div class="form-group"><label>CC</label><input type="email" id="eml-cc-${c.id}-${modo}" placeholder="copia@griscontabil.com.br"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label>Assunto</label><input type="text" id="eml-assunto-${c.id}-${modo}" value="Boas-vindas — ${esc(c.razao)} · Gris Contabilidade"></div>
+      <div class="form-group" style="margin-bottom:14px"><label>Mensagem</label><textarea id="eml-msg-${c.id}-${modo}" style="min-height:100px">Prezado(a) ${esc(c.socio||'cliente')},\n\nSeja bem-vindo(a) à Gris Contabilidade!\n\nEstamos à disposição para todos os serviços contratados.\nE-mail: adm@griscontabil.com.br | Seg-Sex 09h–18h.\n\nAtenciosamente,\nDepartamento Administrativo — Gris Contabilidade</textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-success btn-sm" onclick="enviarEmailProc('${c.id}','${modo}')">📨 Enviar E-mail</button>
+        <button class="btn btn-secondary btn-sm" onclick="dlPDFProcesso('${c.id}','${modo}')">⬇️ Baixar PDF</button>
+        <button class="btn btn-secondary btn-sm" style="background:var(--green-light);color:#065f46;border:1.5px solid var(--green)" onclick="salvarProcDrive('${c.id}','${modo}')">☁️ Salvar no Drive</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
+// FASES ENGINE
+// ══════════════════════════════════════════════
+function getFases(c, modo) {
+  if (!c.customFases) c.customFases = {};
+  if (!c.customFases[modo]) {
+    const padrao = modo==='saida' ? fasesSaida() : modo==='alt' ? fasesAlt() : c.tipo==='migracao' ? fasesMigracao() : fasesNovo();
+    c.customFases[modo] = JSON.parse(JSON.stringify(padrao));
+  }
+  return c.customFases[modo];
+}
+
+function renderFaseBlock(fase, fi, c, modo, editing) {
+  const sk = modo==='saida'?'stateSaida':modo==='alt'?'stateAlt':'stateEntrada';
+  const doneF = fase.steps.filter(s => (c[sk]||{})[s.id]).length;
+  const allDone = doneF===fase.steps.length;
+  const cor = allDone?'background:var(--green)':modo==='saida'?'background:var(--red)':modo==='alt'?'background:var(--gold);color:#78350f':'';
+  let html = `<div class="fase-block open${editing?' editing':''}">
+    <div class="fase-header" onclick="togFase(this)">
+      <div class="fase-num" style="${cor}">${allDone?'✓':fi+1}</div>
+      <div class="fase-title">${esc(fase.titulo)}</div>
+      <span class="fase-badge badge-${allDone?'green':'gray'}">${doneF}/${fase.steps.length}</span>
+      ${editing?`<span onclick="event.stopPropagation();editFaseNome('${c.id}','${modo}',${fi})" style="cursor:pointer;font-size:14px;padding:2px 6px" title="Renomear">✏️</span>
+        <span onclick="event.stopPropagation();delFase('${c.id}','${modo}',${fi})" style="cursor:pointer;font-size:14px;padding:2px 6px;color:var(--red)" title="Excluir fase">🗑️</span>`:''}
+      <span class="fase-chevron">▼</span>
+    </div>`;
+  if (editing) {
+    html += `<div class="fase-edit-bar"><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray)">ETAPAS:</span>
+      <button class="btn-fe green" onclick="addStep('${c.id}','${modo}',${fi})">➕ Nova etapa</button></div>`;
+  }
+  html += '<div class="fase-content">';
+  fase.steps.forEach((step, si) => {
+    const isDone = (c[sk]||{})[step.id] || false;
+    html += `<div class="fase-step${isDone?' done':''}">
+      <div class="fase-step-row" onclick="togFaseStep('${c.id}','${step.id}','${modo}')">
+        <div class="fase-step-num">${isDone?'✓':si+1}</div>
+        <div class="fase-step-body"><strong>${esc(step.titulo)}</strong>${step.desc?'<p>'+esc(step.desc)+'</p>':''}${step.tag?'<span class="step-tag">'+esc(step.tag)+'</span>':''}</div>
+        <div class="fase-step-check">${isDone?'✓':''}</div>
+      </div>`;
+    if (editing) {
+      html += `<div class="step-edit-fields">
+        <input type="text" value="${esc(step.titulo)}" placeholder="Título da etapa"
+          onchange="editStepTitulo('${c.id}','${modo}',${fi},${si},this.value)">
+        <textarea rows="2" placeholder="Descrição (opcional)"
+          onchange="editStepDesc('${c.id}','${modo}',${fi},${si},this.value)">${esc(step.desc||'')}</textarea>
+        <div style="display:flex;gap:6px">
+          <button class="btn-fe red" onclick="delStep('${c.id}','${modo}',${fi},${si})">🗑️ Excluir</button>
+          ${si>0?`<button class="btn-fe blue" onclick="moveStep('${c.id}','${modo}',${fi},${si},-1)">↑</button>`:''}
+          ${si<fase.steps.length-1?`<button class="btn-fe blue" onclick="moveStep('${c.id}','${modo}',${fi},${si},1)">↓</button>`:''}
+        </div>
+      </div>`;
+    }
+    html += '</div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function togFase(el) { el.closest('.fase-block').classList.toggle('open'); }
+
+function togFaseStep(cid, stepId, modo) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  const sk = modo==='saida'?'stateSaida':modo==='alt'?'stateAlt':'stateEntrada';
+  if(!c[sk]) c[sk]={};
+  c[sk][stepId] = !c[sk][stepId];
+  renderProcesso(c, modo);
+  renderLista();
+}
+
+// Edit mode
+function toggleEditMode(cid, modo) {
+  const key = cid+'_'+modo;
+  editMode[key] = !editMode[key];
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  getFases(c, modo); // ensure custom fases exist
+  renderProcesso(c, modo);
+}
+
+function addFase(cid, modo) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  const fases = getFases(c, modo);
+  fases.push({ titulo:'Nova Fase '+(fases.length+1), steps:[{id:'custom_'+Date.now(), titulo:'Nova etapa', desc:''}] });
+  renderProcesso(c, modo);
+  setTimeout(() => editFaseNome(cid, modo, fases.length-1), 100);
+}
+
+function delFase(cid, modo, fi) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  const fases = getFases(c, modo);
+  if (fases.length<=1) { alert('O processo precisa ter ao menos uma fase.'); return; }
+  if (!confirm('Excluir a fase "'+fases[fi].titulo+'" e todas as suas etapas?')) return;
+  fases.splice(fi, 1);
+  renderProcesso(c, modo); renderLista();
+}
+
+function addStep(cid, modo, fi) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  getFases(c, modo)[fi].steps.push({id:'custom_'+Date.now(), titulo:'Nova etapa', desc:''});
+  renderProcesso(c, modo);
+}
+
+function delStep(cid, modo, fi, si) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  const steps = getFases(c, modo)[fi].steps;
+  if (steps.length<=1) { alert('A fase precisa ter ao menos uma etapa.'); return; }
+  steps.splice(si, 1);
+  renderProcesso(c, modo); renderLista();
+}
+
+function editStepTitulo(cid, modo, fi, si, v) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  getFases(c, modo)[fi].steps[si].titulo = v;
+}
+function editStepDesc(cid, modo, fi, si, v) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  getFases(c, modo)[fi].steps[si].desc = v;
+}
+function moveStep(cid, modo, fi, si, dir) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  const steps = getFases(c, modo)[fi].steps;
+  const ni = si+dir;
+  if (ni<0||ni>=steps.length) return;
+  [steps[si],steps[ni]] = [steps[ni],steps[si]];
+  renderProcesso(c, modo);
+}
+
+function editFaseNome(cid, modo, fi) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  const fases = getFases(c, modo);
+  faseEditCtx = {cid, modo, fi};
+  document.getElementById('mfe-header').textContent = 'Renomear Fase';
+  document.getElementById('mfe-titulo').value = fases[fi].titulo;
+  document.getElementById('mfe-desc-grp').style.display = 'none';
+  openModal('modal-fase-edit');
+  setTimeout(() => document.getElementById('mfe-titulo').focus(), 150);
+}
+
+function salvarFaseEdit() {
+  if (!faseEditCtx) return;
+  const {cid, modo, fi} = faseEditCtx;
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  const titulo = document.getElementById('mfe-titulo').value.trim();
+  if (!titulo) { alert('O título não pode ficar em branco.'); return; }
+  getFases(c, modo)[fi].titulo = titulo;
+  closeModal('modal-fase-edit');
+  faseEditCtx = null;
+  renderProcesso(c, modo);
+}
+
+// ══════════════════════════════════════════════
+// FASES PADRÃO
+// ══════════════════════════════════════════════
+function fasesNovo() {
+  return [
+    { titulo:'Fase 1 — Constituição da Empresa', steps:[
+      {id:'n1',titulo:'Analisar a solicitação do cliente',desc:'Tipo societário e atividades pretendidas.'},
+      {id:'n2',titulo:'Coletar documentação dos sócios',desc:'RG/CPF, comprovante de residência (até 90 dias), endereço do estabelecimento, declaração de desimpedimento.'},
+      {id:'n3',titulo:'Elaborar Contrato Social / Requerimento',desc:'Redigir e encaminhar para assinatura.',tag:'📝 Paralegal'},
+      {id:'n4',titulo:'Registrar na Junta Comercial / Cartório',desc:'JUCESP para Ltda./S/A, Cartório para EI/Associações.',tag:'🏛️ JUCESP'},
+      {id:'n5',titulo:'Aguardar emissão do CNPJ',desc:'Acompanhar na Receita Federal.'},
+      {id:'n6',titulo:'Efetuar Inscrições Estadual e Municipal',desc:'IE e IM conforme atividade.',tag:'🏢 Prefeitura/SEFAZ'},
+      {id:'n7',titulo:'Solicitar Alvará de Funcionamento',desc:'Se necessário.'},
+      {id:'n8',titulo:'Definir regime tributário',desc:'MEI, Simples Nacional, Lucro Presumido ou Lucro Real.'},
+    ]},
+    { titulo:'Fase 2 — Onboarding', steps:[
+      {id:'n9',titulo:'Assinar contrato de prestação de serviços',desc:''},
+      {id:'n10',titulo:'Emitir e registrar procuração eletrônica (e-CAC)',desc:''},
+      {id:'n11',titulo:'Cadastrar no sistema contábil',desc:'Razão Social, CNPJ, regime, CNAE, sócios e parâmetros fiscais.'},
+      {id:'n12',titulo:'Cadastrar no sistema de gestão de tarefas',desc:'Configurar obrigações recorrentes.'},
+      {id:'n13',titulo:'Cadastrar no sistema de gerenciamento de CND',desc:'Alerta de 30 dias.'},
+      {id:'n14',titulo:'Criar estrutura de pastas na nuvem',desc:'Pastas 01 a 09.'},
+      {id:'n15',titulo:'Enviar e-mail de boas-vindas ao cliente',desc:''},
+      {id:'n16',titulo:'Comunicar os departamentos (CIP)',desc:'Fiscal, Contábil e DP.',tag:'📋 CIP'},
+      {id:'n17',titulo:'Emitir certidões iniciais e arquivar',desc:'CND Federal, Estadual, Municipal, CRF e CNDT.'},
+      {id:'n18',titulo:'Confirmar conclusão com o coordenador',desc:''},
+    ]}
+  ];
+}
+
+function fasesMigracao() {
+  return [
+    { titulo:'Fase 1 — Recepção e Diagnóstico', steps:[
+      {id:'m1',titulo:'Reunião inicial com o cliente',desc:'Histórico contábil, fiscal e motivação da troca.'},
+      {id:'m2',titulo:'Solicitar documentação completa',desc:'Contrato Social, 12 meses de escrituração, balancetes, folha/FGTS, certidões e SPED.'},
+      {id:'m3',titulo:'Realizar levantamento de débitos',desc:'e-CAC, SEFAZ, Prefeitura, FGTS, PGFN.',tag:'⚠️ Obrigatório antes do contrato'},
+      {id:'m4',titulo:'Apresentar diagnóstico ao cliente',desc:''},
+      {id:'m5',titulo:'Assinar contrato de prestação de serviços',desc:''},
+      {id:'m6',titulo:'Notificar o escritório anterior',desc:'E-mail com confirmação de leitura.'},
+      {id:'m7',titulo:'Coletar arquivos do escritório anterior',desc:'Todos os arquivos digitais, SPED e declarações.'},
+    ]},
+    { titulo:'Fase 2 — Onboarding', steps:[
+      {id:'m8',titulo:'Emitir e registrar procuração eletrônica',desc:''},
+      {id:'m9',titulo:'Cadastrar no sistema contábil',desc:''},
+      {id:'m10',titulo:'Cadastrar no sistema de gestão de tarefas',desc:''},
+      {id:'m11',titulo:'Cadastrar no sistema de gerenciamento de CND',desc:''},
+      {id:'m12',titulo:'Criar estrutura de pastas na nuvem',desc:''},
+      {id:'m13',titulo:'Enviar e-mail de boas-vindas',desc:''},
+      {id:'m14',titulo:'Comunicar os departamentos (CIP)',desc:'',tag:'📋 CIP'},
+      {id:'m15',titulo:'Emitir certidões iniciais e arquivar',desc:''},
+      {id:'m16',titulo:'Confirmar conclusão com o coordenador',desc:''},
+    ]},
+    { titulo:'Fase 3 — Pós-Entrada', steps:[
+      {id:'m17',titulo:'Verificar e organizar escrituração recebida',desc:''},
+      {id:'m18',titulo:'Agendar reunião interna de apresentação',desc:'Repassar histórico para Fiscal, Contábil e DP.'},
+      {id:'m19',titulo:'Definir competência de abertura de cada departamento',desc:''},
+      {id:'m20',titulo:'Validar obrigações no sistema de tarefas',desc:''},
+      {id:'m21',titulo:'Registrar no histórico do cliente',desc:''},
+    ]}
+  ];
+}
+
+function fasesAlt() {
+  return [
+    { titulo:'Fase 1 — Recebimento e Análise', steps:[
+      {id:'a1',titulo:'Receber solicitação formal da alteração',desc:''},
+      {id:'a2',titulo:'Identificar o tipo de alteração',desc:'Societária, cadastral ou tributária.'},
+      {id:'a3',titulo:'Coletar documentação necessária',desc:''},
+      {id:'a4',titulo:'Verificar impacto nos regimes e obrigações',desc:''},
+    ]},
+    { titulo:'Fase 2 — Elaboração dos Documentos', steps:[
+      {id:'a5',titulo:'Elaborar a alteração contratual',desc:'Distrato, aditivo ou instrumento equivalente.',tag:'📝 Paralegal'},
+      {id:'a6',titulo:'Encaminhar para assinatura de todos os sócios',desc:''},
+      {id:'a7',titulo:'Registrar na Junta Comercial / Cartório',desc:'',tag:'🏛️ JUCESP'},
+      {id:'a8',titulo:'Aguardar deferimento e arquivar',desc:'Pasta 01 - Documentos Societários.'},
+    ]},
+    { titulo:'Fase 3 — Atualização de Cadastros', steps:[
+      {id:'a9',titulo:'Atualizar dados na Receita Federal (e-CAC)',desc:''},
+      {id:'a10',titulo:'Atualizar inscrição estadual (SEFAZ)',desc:'Se aplicável.'},
+      {id:'a11',titulo:'Atualizar inscrição municipal (Prefeitura)',desc:'Se aplicável.'},
+      {id:'a12',titulo:'Atualizar no sistema contábil',desc:''},
+      {id:'a13',titulo:'Atualizar no sistema de gestão de tarefas',desc:''},
+      {id:'a14',titulo:'Atualizar no sistema de CND',desc:''},
+    ]},
+    { titulo:'Fase 4 — Comunicação e Encerramento', steps:[
+      {id:'a15',titulo:'Emitir CIP para os departamentos afetados',desc:'',tag:'📋 CIP'},
+      {id:'a16',titulo:'Arquivar documentos na nuvem',desc:''},
+      {id:'a17',titulo:'Confirmar conclusão com o coordenador',desc:''},
+      {id:'a18',titulo:'Registrar no histórico do cliente',desc:''},
+    ]}
+  ];
+}
+
+function fasesSaida() {
+  return [
+    { titulo:'Fase 1 — Rescisão do Contrato', steps:[
+      {id:'s1',titulo:'Receber solicitação de encerramento por escrito',desc:''},
+      {id:'s2',titulo:'Verificar prazo de aviso prévio',desc:'Conforme contrato de prestação de serviços.'},
+      {id:'s3',titulo:'Confirmar recebimento ao cliente com protocolo',desc:''},
+      {id:'s4',titulo:'Comunicar coordenador e gerência',desc:''},
+      {id:'s5',titulo:'Emitir CIP para todos os departamentos',desc:'',tag:'📋 CIP'},
+    ]},
+    { titulo:'Fase 2 — Encerramento das Obrigações', steps:[
+      {id:'s6',titulo:'Verificar obrigações fiscais em aberto',desc:''},
+      {id:'s7',titulo:'Emitir guias e declarações pendentes',desc:''},
+      {id:'s8',titulo:'Emitir NF de rescisão / acerto de honorários',desc:''},
+    ]},
+    { titulo:'Fase 3 — Devolução de Documentos', steps:[
+      {id:'s9',titulo:'Organizar todos os arquivos para entrega',desc:''},
+      {id:'s10',titulo:'Gerar relatório de situação fiscal na saída',desc:''},
+      {id:'s11',titulo:'Encaminhar documentos por canal seguro',desc:''},
+      {id:'s12',titulo:'Solicitar confirmação de recebimento por e-mail',desc:''},
+    ]},
+    { titulo:'Fase 4 — Revogação de Acessos', steps:[
+      {id:'s13',titulo:'Revogar procuração no e-CAC',desc:'Somente após confirmação de recebimento.',tag:'🔒 Após confirmação'},
+      {id:'s14',titulo:'Revogar acessos em portais estaduais e municipais',desc:''},
+      {id:'s15',titulo:'Remover acesso ao portal do escritório',desc:''},
+      {id:'s16',titulo:'Inativar cadastros nos sistemas internos',desc:'Contábil, tarefas e CND.'},
+    ]},
+    { titulo:'Fase 5 — Encerramento do CNPJ (se aplicável)', steps:[
+      {id:'s17',titulo:'Verificar solicitação de baixa do CNPJ',desc:'Somente se o cliente solicitou encerramento.'},
+      {id:'s18',titulo:'Dar baixa na Junta Comercial / Cartório',desc:'',tag:'🏛️ JUCESP'},
+      {id:'s19',titulo:'Solicitar baixa de CNPJ na Receita Federal',desc:''},
+      {id:'s20',titulo:'Dar baixa nas inscrições estadual e municipal',desc:''},
+      {id:'s21',titulo:'Emitir declarações finais (ECF, EFD, DCTF)',desc:''},
+    ]},
+    { titulo:'Fase 6 — Arquivamento Final', steps:[
+      {id:'s22',titulo:'Mover para pasta de clientes encerrados',desc:'Manter por mínimo 5 anos.'},
+      {id:'s23',titulo:'Registrar data de encerramento e motivo',desc:''},
+      {id:'s24',titulo:'Confirmar conclusão com o coordenador',desc:''},
+    ]}
+  ];
+}
+
+// ══════════════════════════════════════════════
+// EDITAR CLIENTE
+// ══════════════════════════════════════════════
+function abrirEditar(id) {
+  clienteEditar = clientes.find(c=>c.id===id); if(!clienteEditar) return;
+  document.getElementById('modal-edit-sub').textContent = clienteEditar.razao;
+  const s = (eid, v) => { const el=document.getElementById(eid); if(el) el.value=v||''; };
+  s('e-razao',clienteEditar.razao); s('e-fantasia',clienteEditar.fantasia);
+  s('e-cnpj',clienteEditar.cnpj); s('e-resp',clienteEditar.resp);
+  s('e-socio',clienteEditar.socio); s('e-email',clienteEditar.email);
+  s('e-tel',clienteEditar.tel); s('e-origem',clienteEditar.origem); s('e-obs',clienteEditar.obs);
+  document.getElementById('e-tpsoc').value = clienteEditar.tpSoc||'';
+  document.getElementById('e-regime').value = clienteEditar.regime||'';
+  renderContatosModal();
+  // reset tabs
+  document.querySelectorAll('#modal-editar .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#modal-editar .tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelector('#modal-editar .tab').classList.add('active');
+  document.getElementById('medit-dados').classList.add('active');
+  document.getElementById('add-contato-form').classList.remove('open');
+  openModal('modal-editar');
+}
+
+function salvarEdicao() {
+  if (!clienteEditar) return;
+  const razao = document.getElementById('e-razao').value.trim();
+  if (!razao) { alert('Razão Social é obrigatória.'); return; }
+  clienteEditar.razao = razao;
+  clienteEditar.fantasia = document.getElementById('e-fantasia').value.trim();
+  clienteEditar.cnpj = document.getElementById('e-cnpj').value.trim();
+  clienteEditar.tpSoc = document.getElementById('e-tpsoc').value;
+  clienteEditar.regime = document.getElementById('e-regime').value;
+  clienteEditar.resp = document.getElementById('e-resp').value.trim();
+  clienteEditar.socio = document.getElementById('e-socio').value.trim();
+  clienteEditar.email = document.getElementById('e-email').value.trim();
+  clienteEditar.tel = document.getElementById('e-tel').value.trim();
+  clienteEditar.origem = document.getElementById('e-origem').value.trim();
+  clienteEditar.obs = document.getElementById('e-obs').value.trim();
+  closeModal('modal-editar');
+  renderLista();
+  if (clienteAtual && clienteAtual.id===clienteEditar.id) renderProcesso(clienteEditar, modoProcesso);
+}
+
+function renderContatosModal() {
+  if (!clienteEditar) return;
+  const wrap = document.getElementById('contatos-lista');
+  if (!clienteEditar.contatos || !clienteEditar.contatos.length) { wrap.innerHTML = '<p style="font-size:13px;color:var(--gray);padding:8px 0">Nenhum contato adicional cadastrado.</p>'; return; }
+  wrap.innerHTML = clienteEditar.contatos.map((ct,i) =>
+    `<div class="contato-item"><div style="font-size:20px">👤</div>
+    <div class="ci-info"><div class="ci-name">${esc(ct.nome)}</div>${ct.cargo?`<div style="margin-top:2px"><span class="ci-cargo">${esc(ct.cargo)}</span></div>`:''}
+    <div class="ci-meta">${[ct.email,ct.tel].filter(Boolean).map(esc).join(' · ')}</div></div>
+    <span class="ci-remove" onclick="delContato(${i})" title="Remover">✕</span></div>`
+  ).join('');
+}
+
+function toggleAddContato() {
+  const f = document.getElementById('add-contato-form');
+  f.classList.toggle('open');
+  if (f.classList.contains('open')) ['nc-nome','nc-cargo','nc-email','nc-tel'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+}
+
+function addContato() {
+  if (!clienteEditar) return;
+  const nome = document.getElementById('nc-nome').value.trim();
+  if (!nome) { alert('Nome é obrigatório.'); return; }
+  if (!clienteEditar.contatos) clienteEditar.contatos = [];
+  clienteEditar.contatos.push({ nome, cargo: document.getElementById('nc-cargo').value.trim(), email: document.getElementById('nc-email').value.trim(), tel: document.getElementById('nc-tel').value.trim() });
+  renderContatosModal();
+  toggleAddContato();
+}
+
+function delContato(i) {
+  if (!clienteEditar) return;
+  clienteEditar.contatos.splice(i,1);
+  renderContatosModal();
+}
+
+// ══════════════════════════════════════════════
+// EXCLUIR CLIENTE
+// ══════════════════════════════════════════════
+function abrirExcluir(id) {
+  clienteExcluir = id;
+  const c = clientes.find(x=>x.id===id);
+  document.getElementById('excl-nome').textContent = c ? c.razao : 'este cliente';
+  document.getElementById('senha-input').value = '';
+  document.getElementById('senha-error').style.display = 'none';
+  openModal('modal-excluir');
+  setTimeout(() => document.getElementById('senha-input').focus(), 200);
+}
+
+function confirmarExclusao() {
+  if (document.getElementById('senha-input').value !== '2016') {
+    document.getElementById('senha-error').style.display = 'block';
+    document.getElementById('senha-input').value = '';
+    return;
+  }
+  clientes = clientes.filter(c => c.id !== clienteExcluir);
+  if (clienteAtual && clienteAtual.id === clienteExcluir) clienteAtual = null;
+  clienteExcluir = null;
+  closeModal('modal-excluir');
+  renderLista();
+  atualizarBadge();
+}
+
+// ══════════════════════════════════════════════
+// CIP
+// ══════════════════════════════════════════════
+function gerarCIP() {
+  const fmt = d => d ? d.split('-').reverse().join('/') : '___';
+  const deps = ['fiscal','contabil','dp','gerencia'].filter(id => document.getElementById('cip-'+id)?.checked).map(id=>({'fiscal':'Fiscal','contabil':'Contábil','dp':'Depto. Pessoal','gerencia':'Gerência'})[id]);
+  const text = `════════════════════════════════════════════════════
+COMUNICADO INTERNO PADRONIZADO — CIP Nº ${document.getElementById('cip-num').value||'___'}
+Departamento Administrativo
+════════════════════════════════════════════════════
+
+Data: ${fmt(document.getElementById('cip-data').value)}
+De: Departamento Administrativo
+Para: ${deps.length?deps.join(' · '):'___'}
+
+Empresa / Cliente: ${document.getElementById('cip-empresa').value||'___'}
+CNPJ: ${document.getElementById('cip-cnpj').value||'___'}
+
+Tipo de Alteração: ${document.getElementById('cip-tipo').value||'___'}
+
+Descrição / Detalhes:
+${document.getElementById('cip-desc').value||'___'}
+
+Data de vigência: ${fmt(document.getElementById('cip-vigencia').value)}
+
+Ações necessárias:
+${document.getElementById('cip-acoes').value||'___'}
+
+────────────────────────────────────────────────────
+Responsável: ${document.getElementById('cip-resp').value||'___'}
+Data de emissão: ${fmt(document.getElementById('cip-data').value)}
+════════════════════════════════════════════════════`;
+  document.getElementById('cip-texto').textContent = text;
+  document.getElementById('cip-output').style.display = 'block';
+  document.getElementById('cip-email-assunto').value = `CIP Nº ${document.getElementById('cip-num').value||'SN'} — ${document.getElementById('cip-empresa').value||'cliente'} | Gris Contabilidade`;
+  document.getElementById('cip-output').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function limparCIP() {
+  ['cip-num','cip-empresa','cip-cnpj','cip-desc','cip-resp','cip-acoes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('cip-tipo').value='';
+  document.getElementById('cip-vigencia').value='';
+  ['cip-fiscal','cip-contabil','cip-dp','cip-gerencia'].forEach(id => { const el=document.getElementById(id); if(el) el.checked=false; });
+  document.getElementById('cip-output').style.display='none';
+  document.getElementById('cip-email-box').style.display='none';
+}
+
+function copiarCIP() {
+  navigator.clipboard.writeText(document.getElementById('cip-texto').textContent).then(() => {
+    const btn = event.target; btn.textContent='✅ Copiado!'; setTimeout(()=>btn.textContent='📋 Copiar',2000);
+  });
+}
+
+function baixarCIP() {
+  const text = document.getElementById('cip-texto').textContent;
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({format:'a4',unit:'mm'});
+  doc.setFont('courier','normal'); doc.setFontSize(9);
+  doc.text(doc.splitTextToSize(text,180),15,20);
+  const num = document.getElementById('cip-num').value||'SN';
+  const emp = document.getElementById('cip-empresa').value||'cliente';
+  doc.save('CIP_'+num.replace(/\//g,'-')+'_'+emp.replace(/[^a-z0-9]/gi,'_')+'.pdf');
+}
+
+function emailCIPToggle() {
+  const box = document.getElementById('cip-email-box');
+  box.style.display = box.style.display==='none'?'block':'none';
+}
+
+function enviarCIPEmail() {
+  const para = document.getElementById('cip-email-para').value.trim();
+  const assunto = document.getElementById('cip-email-assunto').value.trim();
+  const msg = document.getElementById('cip-email-msg').value.trim();
+  if (!para||!assunto) { alert('Preencha destinatário e assunto.'); return; }
+  baixarCIP();
+  const body = encodeURIComponent(msg+'\n\n---\nPDF gerado e baixado. Anexe antes de enviar.\n\nadm@griscontabil.com.br');
+  window.open('mailto:'+encodeURIComponent(para)+'?subject='+encodeURIComponent(assunto)+'&body='+body,'_blank');
+  document.getElementById('modal-email-msg').textContent = 'PDF baixado. Abra o cliente de e-mail, anexe o PDF e envie para '+para+'.';
+  openModal('modal-email-ok');
+}
+
+function salvarCIPDrive() {
+  if (!driveTk) { toast('Conecte ao Google Drive primeiro.','#991b1b'); return; }
+  const text = document.getElementById('cip-texto').textContent;
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({format:'a4',unit:'mm'});
+  doc.setFont('courier','normal'); doc.setFontSize(9);
+  doc.text(doc.splitTextToSize(text,180),15,20);
+  const num=document.getElementById('cip-num').value||'SN';
+  const emp=document.getElementById('cip-empresa').value||'cliente';
+  const nome='CIP_'+num.replace(/\//g,'-')+'_'+emp.replace(/[^a-z0-9]/gi,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf';
+  const blob=new Blob([doc.output('arraybuffer')],{type:'application/pdf'});
+  (async()=>{
+    try {
+      if(!driveRootId) driveRootId=await driveGetOrCreate(localStorage.getItem('gris_drive_root')||'Gris Contabilidade',null);
+      const escrId=await driveGetOrCreate('Escritório Interno',driveRootId);
+      const cipId=await driveGetOrCreate('04 - Comunicados e CIPs',escrId);
+      const data=await driveUploadBlob(blob,nome,cipId);
+      drivePDFs.unshift({name:nome,link:data.webViewLink,tipo:'CIP',cliente:emp,data:new Date().toLocaleDateString('pt-BR')});
+      renderDrivePDFs();
+      toast('✅ CIP salvo no Drive: '+nome);
+    } catch(e){ toast('❌ Erro: '+e.message,'#991b1b'); }
+  })();
+}
+
+// ══════════════════════════════════════════════
+// EMAIL PROCESSO
+// ══════════════════════════════════════════════
+function enviarEmailProc(cid, modo) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  const para = document.getElementById('eml-para-'+cid+'-'+modo)?.value.trim();
+  const assunto = document.getElementById('eml-assunto-'+cid+'-'+modo)?.value.trim();
+  const msg = document.getElementById('eml-msg-'+cid+'-'+modo)?.value.trim();
+  if (!para) { alert('Informe o e-mail do destinatário.'); return; }
+  dlPDFProcesso(cid, modo);
+  const body = encodeURIComponent((msg||'')+'\n\n---\nPDF gerado e baixado. Anexe antes de enviar.\n\nadm@griscontabil.com.br');
+  window.open('mailto:'+encodeURIComponent(para)+'?subject='+encodeURIComponent(assunto||c.razao)+'&body='+body,'_blank');
+  document.getElementById('modal-email-msg').textContent = 'PDF baixado. Abra o cliente de e-mail, anexe o PDF e envie para '+para+'.';
+  openModal('modal-email-ok');
+}
+
+// ══════════════════════════════════════════════
+// PDF PROCESSO
+// ══════════════════════════════════════════════
+function dlPDFProcesso(cid, modo) {
+  const c = clientes.find(x=>x.id==cid); if(!c) return;
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({format:'a4',unit:'mm'});
+  const fases=getFases(c,modo);
+  const sk=modo==='saida'?'stateSaida':modo==='alt'?'stateAlt':'stateEntrada';
+  const titulo=modo==='saida'?'Processo de Saída':modo==='alt'?'Processo de Alteração':'Processo de Entrada';
+  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.text('GRIS CONTABILIDADE',15,20);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text(titulo+' — '+c.razao,15,28);
+  doc.setDrawColor(37,99,235); doc.line(15,32,195,32); doc.setFontSize(9);
+  if(c.cnpj) doc.text('CNPJ: '+c.cnpj,15,40);
+  if(c.regime) doc.text('Regime: '+c.regime,80,40);
+  let y=50;
+  fases.forEach(fase=>{
+    if(y>260){doc.addPage();y=20;}
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.setFillColor(15,31,61); doc.setTextColor(255,255,255);
+    doc.rect(15,y-5,180,8,'F'); doc.text(fase.titulo,17,y); doc.setTextColor(0,0,0); y+=8;
+    fase.steps.forEach((s,i)=>{
+      if(y>270){doc.addPage();y=20;}
+      const done=(c[sk]||{})[s.id];
+      doc.setFont('helvetica',done?'bold':'normal'); doc.setFontSize(9);
+      doc.text((done?'[✓] ':'[ ] ')+(i+1)+'. '+s.titulo,17,y); y+=5;
+      if(s.desc){ doc.setFontSize(8); doc.setTextColor(100,116,139); const dl=doc.splitTextToSize(s.desc,165); doc.text(dl,25,y); y+=dl.length*4; doc.setTextColor(0,0,0); }
+      y+=2;
+    }); y+=4;
+  });
+  doc.setFontSize(8); doc.setTextColor(150,150,150); doc.text('Gris Contabilidade · adm@griscontabil.com.br · '+new Date().toLocaleDateString('pt-BR'),15,285);
+  doc.save(titulo.replace(/\s/g,'_')+'_'+c.razao.replace(/[^a-z0-9]/gi,'_')+'.pdf');
+}
+
+async function salvarProcDrive(cid, modo) {
+  if (!driveTk) { toast('Conecte ao Google Drive primeiro.','#991b1b'); return; }
+  const c=clientes.find(x=>x.id==cid); if(!c) return;
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({format:'a4',unit:'mm'});
+  const fases=getFases(c,modo); const sk=modo==='saida'?'stateSaida':modo==='alt'?'stateAlt':'stateEntrada';
+  const titulo=modo==='saida'?'Processo de Saída':modo==='alt'?'Processo de Alteração':'Processo de Entrada';
+  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.text('GRIS CONTABILIDADE',15,20);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text(titulo+' — '+c.razao,15,28);
+  doc.setDrawColor(37,99,235); doc.line(15,32,195,32); doc.setFontSize(9);
+  if(c.cnpj) doc.text('CNPJ: '+c.cnpj,15,40);
+  let y=50;
+  fases.forEach(fase=>{
+    if(y>260){doc.addPage();y=20;}
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.setFillColor(15,31,61); doc.setTextColor(255,255,255);
+    doc.rect(15,y-5,180,8,'F'); doc.text(fase.titulo,17,y); doc.setTextColor(0,0,0); y+=8;
+    fase.steps.forEach((s,i)=>{ if(y>270){doc.addPage();y=20;} const done=(c[sk]||{})[s.id]; doc.setFont('helvetica',done?'bold':'normal'); doc.setFontSize(9); doc.text((done?'[✓] ':'[ ] ')+(i+1)+'. '+s.titulo,17,y); y+=7; });
+    y+=4;
+  });
+  doc.setFontSize(8); doc.setTextColor(150,150,150); doc.text('Gris Contabilidade · '+new Date().toLocaleDateString('pt-BR'),15,285);
+  const blob=new Blob([doc.output('arraybuffer')],{type:'application/pdf'});
+  const nome=titulo.replace(/\s/g,'_')+'_'+c.razao.replace(/[^a-z0-9]/gi,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf';
+  const destPasta = document.getElementById('dr-pdf-pasta')?.value;
+  const destCli = document.getElementById('dr-pdf-cli')?.value;
+  try {
+    let destId = destPasta || (destCli==c.id&&c._driveFolder) || null;
+    if (!destId) {
+      if(!driveRootId) driveRootId=await driveGetOrCreate(localStorage.getItem('gris_drive_root')||'Gris Contabilidade',null);
+      const cliRoot=await driveGetOrCreate('Clientes',driveRootId);
+      const cliFolder=await driveGetOrCreate(c.razao+(c.cnpj?' ('+c.cnpj+')':''),cliRoot);
+      c._driveFolder=cliFolder; destId=cliFolder;
+    }
+    const data=await driveUploadBlob(blob,nome,destId);
+    drivePDFs.unshift({name:nome,link:data.webViewLink,tipo:titulo,cliente:c.razao,data:new Date().toLocaleDateString('pt-BR')});
+    renderDrivePDFs();
+    toast('✅ Salvo no Drive: '+nome);
+  } catch(e){ toast('❌ Erro: '+e.message,'#991b1b'); }
+}
+
+// ══════════════════════════════════════════════
+// GOOGLE DRIVE
+// ══════════════════════════════════════════════
+const PASTAS_POP=['01 - Documentos Societários','02 - Documentos dos Sócios','03 - Contratos e Procurações','04 - Certidões','05 - Fiscal','06 - Contábil','07 - Departamento Pessoal','08 - Correspondências','09 - Abertura e Encerramento'];
+const PASTAS_ESC=['01 - Modelos de Contratos','02 - POPs e Procedimentos','03 - Planilhas e Relatórios','04 - Comunicados e CIPs','05 - Honorários e Propostas','06 - Recursos Humanos','07 - Fiscal e Tributário','08 - Societário e Jurídico','09 - Administrativo Geral'];
+
+function initDrive() {
+  const clientId = localStorage.getItem('gris_drive_client');
+  const rootName = localStorage.getItem('gris_drive_root') || 'Gris Contabilidade';
+  if (!clientId) {
+    document.getElementById('drive-not-cfg').style.display='block';
+    document.getElementById('drive-cfg').style.display='none';
+  } else {
+    document.getElementById('drive-not-cfg').style.display='none';
+    document.getElementById('drive-cfg').style.display='block';
+    popularDriveSels();
+    if (!driveTk) {
+      setDriveStatus('disconnected','⚡ Não autenticado — clique em "Conectar ao Google"');
+      // Show current config summary
+      const recfgId=document.getElementById('drive-reconfig-id');
+      const recfgRoot=document.getElementById('drive-reconfig-root');
+      if(recfgId) recfgId.value=clientId;
+      if(recfgRoot) recfgRoot.value=rootName;
+    } else {
+      setDriveStatus('connected','✅ Conectado ao Google Drive');
+    }
+  }
+}
+
+function toggleDriveCfg() { const f=document.getElementById('drive-cfg-form'); f.style.display=f.style.display==='none'?'block':'none'; const s=localStorage.getItem('gris_drive_client'); if(s)document.getElementById('drive-client-id').value=s; const r=localStorage.getItem('gris_drive_root'); if(r)document.getElementById('drive-root-name').value=r; }
+function toggleDriveGuia() { const g=document.getElementById('drive-guia'); g.style.display=g.style.display==='none'?'block':'none'; }
+
+function salvarCfgDrive() {
+  const id=document.getElementById('drive-client-id').value.trim();
+  const root=document.getElementById('drive-root-name').value.trim()||'Gris Contabilidade';
+  if(!id){alert('Informe o Client ID.');return;}
+  localStorage.setItem('gris_drive_client',id); localStorage.setItem('gris_drive_root',root);
+  document.getElementById('drive-cfg-form').style.display='none';
+  initDrive(); driveConnect();
+}
+
+function setDriveStatus(type,text) {
+  const bar=document.getElementById('drive-status-bar');
+  bar.className='drive-status-bar '+type;
+  document.getElementById('drive-s-icon').textContent=type==='connected'?'✅':type==='error'?'❌':'⚡';
+  document.getElementById('drive-s-text').textContent=text;
+  const btnCon=document.getElementById('btn-drive-con');
+  if(btnCon) btnCon.style.display=type==='connected'?'none':'inline-flex';
+}
+
+function abrirReconfigurarDrive() {
+  const box=document.getElementById('drive-reconfig-box');
+  box.style.display=box.style.display==='none'?'block':'none';
+  const id=localStorage.getItem('gris_drive_client')||'';
+  const root=localStorage.getItem('gris_drive_root')||'Gris Contabilidade';
+  document.getElementById('drive-reconfig-id').value=id;
+  document.getElementById('drive-reconfig-root').value=root;
+}
+
+function salvarReconfigDrive() {
+  const id=document.getElementById('drive-reconfig-id').value.trim();
+  const root=document.getElementById('drive-reconfig-root').value.trim()||'Gris Contabilidade';
+  if(!id){alert('Informe o Client ID.');return;}
+  localStorage.setItem('gris_drive_client',id);
+  localStorage.setItem('gris_drive_root',root);
+  // Reset tokens and state
+  driveTk=null; driveRootId=null; driveEscId=null;
+  driveCurFolder={cli:null,esc:null}; driveBc={cli:[],esc:[]}; driveCurCli=null;
+  document.getElementById('drive-reconfig-box').style.display='none';
+  document.getElementById('dr-cli-area').style.display='none';
+  setDriveStatus('disconnected','✅ Configuração salva. Clique em "Conectar ao Google".');
+  document.getElementById('btn-drive-con').style.display='inline-flex';
+  // Auto connect
+  setTimeout(()=>driveConnect(),300);
+}
+
+function excluirCfgDrive() {
+  if(!confirm('Apagar a configuração do Google Drive? Isso remove o Client ID salvo. Você precisará configurar novamente.')) return;
+  localStorage.removeItem('gris_drive_client');
+  localStorage.removeItem('gris_drive_root');
+  driveTk=null; driveRootId=null; driveEscId=null;
+  driveCurFolder={cli:null,esc:null}; driveBc={cli:[],esc:[]}; driveCurCli=null;
+  document.getElementById('drive-reconfig-box').style.display='none';
+  document.getElementById('drive-cfg').style.display='none';
+  document.getElementById('drive-not-cfg').style.display='block';
+  toast('✅ Configuração removida. Configure novamente quando quiser.','#1e40af');
+}
+
+function driveConnect() {
+  const clientId=localStorage.getItem('gris_drive_client');
+  if(!clientId){ abrirReconfigurarDrive(); return; }
+  setDriveStatus('disconnected','🔄 Abrindo janela de autenticação Google...');
+  const redir=window.location.origin+window.location.pathname;
+  const params=new URLSearchParams({
+    client_id:clientId, redirect_uri:redir,
+    response_type:'token',
+    scope:'https://www.googleapis.com/auth/drive',
+    prompt:'select_account'
+  });
+  let popup;
+  try {
+    popup=window.open('https://accounts.google.com/o/oauth2/v2/auth?'+params,'google_auth','width=520,height=640,left=200,top=80');
+    if(!popup||popup.closed){
+      setDriveStatus('error','❌ Pop-up bloqueado. Libere pop-ups para este site nas configurações do navegador e tente novamente.');
+      return;
+    }
+  } catch(e) {
+    setDriveStatus('error','❌ Não foi possível abrir a janela de autenticação: '+e.message);
+    return;
+  }
+  let closed=false;
+  const t=setInterval(()=>{
+    try{
+      if(popup.closed&&!closed){
+        clearInterval(t); closed=true;
+        if(!driveTk) setDriveStatus('disconnected','⚡ Autenticação cancelada. Clique em "Conectar" para tentar novamente.');
+        return;
+      }
+      const h=popup.location.hash;
+      if(h&&h.includes('access_token')){
+        const tp=new URLSearchParams(h.substring(1));
+        driveTk=tp.get('access_token');
+        popup.close(); clearInterval(t); closed=true;
+        setDriveStatus('connected','✅ Conectado ao Google Drive com sucesso!');
+        popularDriveSels();
+        toast('✅ Google Drive conectado!');
+      } else if(h&&(h.includes('error=access_denied')||h.includes('error='))){
+        const err=new URLSearchParams(h.substring(1)).get('error')||'desconhecido';
+        popup.close(); clearInterval(t); closed=true;
+        setDriveStatus('error','❌ Acesso negado ('+err+'). Verifique se seu e-mail está na lista de usuários de teste no Google Cloud Console.');
+      }
+    }catch(e){}
+  },500);
+  // Timeout after 3 minutes
+  setTimeout(()=>{
+    if(!driveTk&&!closed){ clearInterval(t); popup.close(); setDriveStatus('disconnected','⚡ Tempo esgotado. Tente novamente.'); }
+  },180000);
+}
+
+function driveDisconnect() {
+  driveTk=null; driveRootId=null; driveEscId=null;
+  driveCurFolder={cli:null,esc:null}; driveBc={cli:[],esc:[]}; driveCurCli=null;
+  const cliArea=document.getElementById('dr-cli-area');
+  if(cliArea) cliArea.style.display='none';
+  const cliTree=document.getElementById('dr-cli-tree');
+  if(cliTree) cliTree.innerHTML='';
+  const escTree=document.getElementById('dr-esc-tree');
+  if(escTree) escTree.innerHTML='<div style="font-size:12px;color:var(--gray);padding:8px">Conecte ao Drive para ver as pastas</div>';
+  setDriveStatus('disconnected','⚡ Desconectado — clique em "Conectar ao Google" para entrar novamente');
+}
+
+async function driveAPI(path,opts={}) {
+  if(!driveTk) throw new Error('Não autenticado.');
+  const r=await fetch('https://www.googleapis.com/drive/v3/'+path,{...opts,headers:{Authorization:'Bearer '+driveTk,'Content-Type':'application/json',...(opts.headers||{})}});
+  if(r.status===401){driveTk=null;setDriveStatus('error','❌ Sessão expirada. Reconecte.');throw new Error('Token expirado');}
+  if(r.status===204) return {};
+  if(!r.ok) throw new Error('Drive API '+r.status);
+  return r.json();
+}
+
+async function driveGetOrCreate(nome,parentId) {
+  const q="name='"+(nome.replace(/'/g,"\\'"))+"' and mimeType='application/vnd.google-apps.folder' and trashed=false"+(parentId?" and '"+parentId+"' in parents":'');
+  const r=await driveAPI('files?q='+encodeURIComponent(q)+'&fields=files(id,name)');
+  if(r.files&&r.files.length>0) return r.files[0].id;
+  const cr=await driveAPI('files',{method:'POST',body:JSON.stringify({name:nome,mimeType:'application/vnd.google-apps.folder',...(parentId?{parents:[parentId]}:{})})});
+  return cr.id;
+}
+
+async function driveUploadBlob(blob,nome,folderId) {
+  const meta=JSON.stringify({name:nome,parents:[folderId]});
+  const form=new FormData();
+  form.append('metadata',new Blob([meta],{type:'application/json'}));
+  form.append('file',blob);
+  const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',{method:'POST',headers:{Authorization:'Bearer '+driveTk},body:form});
+  if(!r.ok) throw new Error('Upload falhou: '+r.status);
+  return r.json();
+}
+
+function swDriveTab(tab,el) {
+  ['cli','esc','pdf'].forEach(t=>{ document.getElementById('dtab-'+t).classList.remove('active'); document.getElementById('dtab-'+t+'-btn').classList.remove('active'); });
+  document.getElementById('dtab-'+tab).classList.add('active');
+  el.classList.add('active');
+  if(tab==='esc'&&driveTk) loadEscritorio();
+  if(tab==='pdf'){popularDriveSels();renderDrivePDFs();}
+}
+
+function popularDriveSels() {
+  ['dr-cli-sel','dr-pdf-cli'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel) return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— Selecione um cliente —</option>';
+    clientes.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.razao+(c.cnpj?' · '+c.cnpj:''); sel.appendChild(o); });
+    if(cur) sel.value=cur;
+  });
+}
+
+async function selCliDrive(cid) {
+  const area=document.getElementById('dr-cli-area');
+  if(!cid){area.style.display='none';return;}
+  if(!driveTk){driveConnect();return;}
+  driveCurCli=cid; area.style.display='block';
+  document.getElementById('dr-cli-tree').innerHTML='<div style="font-size:12px;color:var(--gray);padding:8px">⏳ Carregando...</div>';
+  try {
+    const c=clientes.find(x=>x.id==cid);
+    if(!driveRootId) driveRootId=await driveGetOrCreate(localStorage.getItem('gris_drive_root')||'Gris Contabilidade',null);
+    const cliRoot=await driveGetOrCreate('Clientes',driveRootId);
+    const nomePasta=c.razao+(c.cnpj?' ('+c.cnpj+')':'');
+    const cliId=await driveGetOrCreate(nomePasta,cliRoot);
+    c._driveFolder=cliId;
+    const q="'"+cliId+"' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false";
+    const r=await driveAPI('files?q='+encodeURIComponent(q)+'&fields=files(id,name)&orderBy=name');
+    renderDriveTree('dr-cli-tree',cliId,nomePasta,r.files||[],'cli');
+    driveBc.cli=[{id:cliId,name:nomePasta}]; driveCurFolder.cli=cliId;
+    loadFiles('cli');
+  } catch(e){ document.getElementById('dr-cli-tree').innerHTML='<div style="color:var(--red);font-size:12px;padding:8px">❌ '+esc(e.message)+'</div>'; }
+}
+
+async function loadEscritorio() {
+  document.getElementById('dr-esc-tree').innerHTML='<div style="font-size:12px;color:var(--gray);padding:8px">⏳ Carregando...</div>';
+  try {
+    if(!driveRootId) driveRootId=await driveGetOrCreate(localStorage.getItem('gris_drive_root')||'Gris Contabilidade',null);
+    driveEscId=await driveGetOrCreate('Escritório Interno',driveRootId);
+    const q="'"+driveEscId+"' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false";
+    const r=await driveAPI('files?q='+encodeURIComponent(q)+'&fields=files(id,name)&orderBy=name');
+    renderDriveTree('dr-esc-tree',driveEscId,'Escritório Interno',r.files||[],'esc');
+    driveBc.esc=[{id:driveEscId,name:'Escritório Interno'}]; driveCurFolder.esc=driveEscId;
+    loadFiles('esc');
+  } catch(e){ document.getElementById('dr-esc-tree').innerHTML='<div style="color:var(--red);font-size:12px;padding:8px">❌ '+esc(e.message)+'</div>'; }
+}
+
+function renderDriveTree(treeId,rootId,rootName,subs,ctx) {
+  const w=document.getElementById(treeId); if(!w) return;
+  let h='<div class="dft-folder'+(driveCurFolder[ctx]===rootId?' active':'') +'" onclick="navDrive(\''+rootId+'\',\''+esc(rootName)+'\',\''+ctx+'\')">'
+    +'<span style="font-size:16px">📂</span><span class="df-name">'+esc(rootName)+'</span></div>'
+    +'<div class="dft-children">';
+  if(!subs.length) h+='<div style="font-size:11px;color:var(--gray);padding:4px 8px">Nenhuma pasta</div>';
+  else subs.forEach(p=>{ h+='<div class="dft-folder'+(driveCurFolder[ctx]===p.id?' active':'')+'" onclick="navDrive(\''+p.id+'\',\''+esc(p.name)+'\',\''+ctx+'\')">'+'<span style="font-size:16px">📁</span><span class="df-name">'+esc(p.name)+'</span></div>'; });
+  h+='</div>'; w.innerHTML=h;
+}
+
+function navDrive(fid,fname,ctx) {
+  const bc=driveBc[ctx];
+  const idx=bc.findIndex(b=>b.id===fid);
+  if(idx>=0) driveBc[ctx]=bc.slice(0,idx+1);
+  else driveBc[ctx].push({id:fid,name:fname});
+  driveCurFolder[ctx]=fid;
+  renderDriveBc(ctx);
+  loadFiles(ctx);
+}
+
+function renderDriveBc(ctx) {
+  const el=document.getElementById('dr-'+ctx+'-bc'); if(!el) return;
+  const bc=driveBc[ctx]||[];
+  el.innerHTML=bc.map((b,i)=>i===bc.length-1?'<span class="dbc-cur">'+esc(b.name)+'</span>':'<span class="dbc-item" onclick="navDrive(\''+b.id+'\',\''+esc(b.name)+'\',\''+ctx+'\')">'+esc(b.name)+'</span><span class="dbc-sep">›</span>').join('');
+}
+
+async function loadFiles(ctx) {
+  const fid=driveCurFolder[ctx]; if(!fid||!driveTk) return;
+  const listEl=document.getElementById('dr-'+ctx+'-files');
+  const loadEl=document.getElementById('dr-'+ctx+'-loading');
+  const emptyEl=document.getElementById('dr-'+ctx+'-empty');
+  if(!listEl) return;
+  listEl.innerHTML=''; loadEl.style.display='block'; emptyEl.style.display='none';
+  try {
+    const q="'"+fid+"' in parents and trashed=false";
+    const r=await driveAPI('files?q='+encodeURIComponent(q)+'&fields=files(id,name,mimeType,size,modifiedTime,webViewLink)&orderBy=folder,name');
+    loadEl.style.display='none';
+    const files=r.files||[];
+    if(!files.length){emptyEl.style.display='block';return;}
+    listEl.innerHTML=files.map(f=>{
+      const isF=f.mimeType==='application/vnd.google-apps.folder';
+      const icon=isF?'📁':getFileIcon(f.name,f.mimeType);
+      const size=f.size?fmtBytes(parseInt(f.size)):'';
+      const date=f.modifiedTime?new Date(f.modifiedTime).toLocaleDateString('pt-BR'):'';
+      const meta=[size,date].filter(Boolean).join(' · ');
+      return '<div class="drive-file-item"><span style="font-size:20px;flex-shrink:0">'+icon+'</span>'
+        +'<div class="dfi-info"><div class="dfi-name" title="'+esc(f.name)+'">'+esc(f.name)+'</div>'+(meta?'<div class="dfi-meta">'+meta+'</div>':'')+'</div>'
+        +'<div class="dfi-actions">'+(isF?'<button class="btn-fe blue" onclick="navDrive(\''+f.id+'\',\''+esc(f.name)+'\',\''+ctx+'\')">Abrir</button>':'<a href="'+f.webViewLink+'" target="_blank" class="btn-fe blue" style="text-decoration:none">Ver</a>')+'</div></div>';
+    }).join('');
+    renderDriveBc(ctx);
+  } catch(e){ loadEl.style.display='none'; listEl.innerHTML='<div style="color:var(--red);font-size:12px;padding:12px">❌ '+esc(e.message)+'</div>'; }
+}
+
+async function uploadFiles(files,ctx) {
+  if(!files||!files.length) return;
+  if(!driveTk){driveConnect();return;}
+  const fid=driveCurFolder[ctx]; if(!fid){alert('Selecione uma pasta primeiro.');return;}
+  const progEl=document.getElementById('dr-'+ctx+'-prog');
+  const progFill=document.getElementById('dr-'+ctx+'-prog-fill');
+  const statEl=document.getElementById('dr-'+ctx+'-status');
+  progEl.style.display='block'; statEl.style.display='block';
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    statEl.style.color='var(--gray)'; statEl.textContent='Enviando '+(i+1)+'/'+files.length+': '+f.name+'...';
+    progFill.style.width=Math.round(i/files.length*100)+'%';
+    try {
+      const meta=JSON.stringify({name:f.name,parents:[fid]});
+      const form=new FormData(); form.append('metadata',new Blob([meta],{type:'application/json'})); form.append('file',f);
+      const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',{method:'POST',headers:{Authorization:'Bearer '+driveTk},body:form});
+      if(!r.ok) throw new Error('Upload falhou: '+r.status);
+    } catch(e){ statEl.style.color='var(--red)'; statEl.textContent='❌ Erro: '+e.message; progEl.style.display='none'; return; }
+  }
+  progFill.style.width='100%'; statEl.style.color='var(--green)'; statEl.textContent='✅ '+files.length+' arquivo(s) enviado(s)!';
+  setTimeout(()=>{ progEl.style.display='none'; statEl.style.display='none'; progFill.style.width='0%'; },2500);
+  loadFiles(ctx);
+}
+
+function handleDrop(e,ctx){e.preventDefault();e.currentTarget.classList.remove('dragover');uploadFiles(e.dataTransfer.files,ctx);}
+
+async function criarPastasPOP() {
+  if(!driveTk){driveConnect();return;}
+  const c=clientes.find(x=>x.id==driveCurCli); if(!c||!c._driveFolder){alert('Selecione um cliente.');return;}
+  const btn=event.target; btn.textContent='⏳ Criando...'; btn.disabled=true;
+  try { for(const n of PASTAS_POP) await driveGetOrCreate(n,c._driveFolder); btn.textContent='✅ Criada!'; setTimeout(()=>{btn.textContent='📁 Criar estrutura POP';btn.disabled=false;},2000); await selCliDrive(driveCurCli); }
+  catch(e){btn.textContent='❌ Erro';btn.disabled=false;setTimeout(()=>{btn.textContent='📁 Criar estrutura POP';},2000);}
+}
+
+async function criarPastasEscritorio() {
+  if(!driveTk){driveConnect();return;}
+  const btn=event.target; btn.textContent='⏳ Criando...'; btn.disabled=true;
+  try {
+    if(!driveRootId) driveRootId=await driveGetOrCreate(localStorage.getItem('gris_drive_root')||'Gris Contabilidade',null);
+    const eid=await driveGetOrCreate('Escritório Interno',driveRootId);
+    for(const n of PASTAS_ESC) await driveGetOrCreate(n,eid);
+    btn.textContent='✅ Criada!'; setTimeout(()=>{btn.textContent='📁 Criar estrutura do escritório';btn.disabled=false;},2000); loadEscritorio();
+  } catch(e){btn.textContent='❌ Erro';btn.disabled=false;setTimeout(()=>{btn.textContent='📁 Criar estrutura do escritório';},2000);}
+}
+
+function abrirNoDrive(ctx) {
+  if(ctx==='cli'){const c=clientes.find(x=>x.id==driveCurCli);if(c&&c._driveFolder)window.open('https://drive.google.com/drive/folders/'+c._driveFolder,'_blank');}
+  else if(ctx==='esc'&&driveEscId) window.open('https://drive.google.com/drive/folders/'+driveEscId,'_blank');
+}
+
+async function loadPdfPastas(cid) {
+  const sel=document.getElementById('dr-pdf-pasta'); sel.innerHTML='<option value="">— Pasta raiz do cliente —</option>';
+  if(!cid||!driveTk) return;
+  try {
+    const c=clientes.find(x=>x.id==cid);
+    if(!driveRootId) driveRootId=await driveGetOrCreate(localStorage.getItem('gris_drive_root')||'Gris Contabilidade',null);
+    const cliRoot=await driveGetOrCreate('Clientes',driveRootId);
+    const nomePasta=c.razao+(c.cnpj?' ('+c.cnpj+')':'');
+    const cliId=await driveGetOrCreate(nomePasta,cliRoot); c._driveFolder=cliId;
+    const q="'"+cliId+"' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false";
+    const r=await driveAPI('files?q='+encodeURIComponent(q)+'&fields=files(id,name)&orderBy=name');
+    (r.files||[]).forEach(f=>{ const o=document.createElement('option'); o.value=f.id; o.textContent=f.name; sel.appendChild(o); });
+  } catch(e){}
+}
+
+function refreshFiles(ctx) { loadFiles(ctx); }
+
+function renderDrivePDFs() {
+  const el=document.getElementById('dr-pdfs-lista'); if(!el) return;
+  if(!drivePDFs.length){ el.innerHTML='<div style="text-align:center;padding:24px;color:var(--gray);font-size:13px"><div style="font-size:28px;margin-bottom:8px">☁️</div><p>Nenhum PDF salvo ainda. Use os botões "☁️ Salvar no Drive".</p></div>'; return; }
+  el.innerHTML=drivePDFs.map(p=>'<div class="drive-file-item"><span style="font-size:20px">📄</span><div class="dfi-info"><div class="dfi-name">'+esc(p.name)+'</div><div class="dfi-meta">'+esc(p.tipo)+' · '+esc(p.cliente)+' · '+p.data+'</div></div><div class="dfi-actions"><a href="'+p.link+'" target="_blank" class="btn-fe blue" style="text-decoration:none">Ver</a></div></div>').join('');
+}
+
+function getFileIcon(name,mime){if(mime==='application/pdf')return'📄';if(mime.includes('spreadsheet')||/\.xlsx?$/i.test(name))return'📊';if(mime.includes('document')||/\.docx?$/i.test(name))return'📝';if(mime.includes('image'))return'🖼️';if(mime.includes('zip'))return'🗜️';return'📎';}
+function fmtBytes(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+document.getElementById('cip-data').value = today();
+</script>
+</body>
+</html>
