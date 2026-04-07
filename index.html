@@ -20,14 +20,14 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const _auth = firebase.auth();
-const _db   = firebase.firestore();
+window._auth = firebase.auth();
+window._db   = firebase.firestore();
 
 // Offline persistence
-_db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+window._db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
 // Auth state listener — controls login/app visibility
-_auth.onAuthStateChanged(user => {
+window._auth.onAuthStateChanged(user => {
   if (user) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-screen').style.display  = 'block';
@@ -1163,6 +1163,7 @@ tbody td{padding:12px 18px;font-size:13px;color:var(--text);line-height:1.5;}
 </div>
 <div class="modal-overlay" id="modal-excluir"><div class="modal"><div class="modal-icon">🔒</div><h3>Excluir Cliente</h3><p>Digite a senha para confirmar a exclusão de <strong id="excl-nome"></strong>.</p><div class="senha-input-wrap"><input type="password" id="senha-input" maxlength="10" placeholder="••••" onkeydown="if(event.key==='Enter')confirmarExclusao()"></div><p class="senha-error" id="senha-error">Senha incorreta.</p><div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-excluir')">Cancelar</button><button class="btn btn-danger" onclick="confirmarExclusao()">🗑️ Excluir</button></div></div></div>
 <div class="modal-overlay" id="modal-fase-edit"><div class="modal-fase"><div class="modal-fase-header"><h4 id="mfe-header">Editar</h4><span class="mfh-close" onclick="closeModal('modal-fase-edit')">✕</span></div><div class="modal-fase-body"><div class="form-group" style="margin-bottom:14px"><label>Título *</label><input type="text" id="mfe-titulo" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none"></div><div class="form-group" id="mfe-desc-grp" style="margin-
+<script>
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
@@ -1206,11 +1207,11 @@ function normalizarCliente(c) {
 }
 
 async function saveDB(cliente) {
-  if (!_db || !_auth.currentUser) return;
+  if (!window._db || !window._auth.currentUser) return;
   if (!cliente) return;
   setSyncStatus('syncing');
   try {
-    await _db.collection('clientes').doc(String(cliente.id)).set(JSON.parse(JSON.stringify(cliente)));
+    await window._db.collection('clientes').doc(String(cliente.id)).set(JSON.parse(JSON.stringify(cliente)));
     setSyncStatus('ok');
   } catch(e) {
     console.error('saveDB error:', e);
@@ -1220,9 +1221,9 @@ async function saveDB(cliente) {
 }
 
 async function loadDB() {
-  if (!_db || !_auth.currentUser) return;
+  if (!window._db || !window._auth.currentUser) return;
   try {
-    const snap = await _db.collection('clientes').get();
+    const snap = await window._db.collection('clientes').get();
     clientes = [];
     snap.forEach(d => clientes.push(normalizarCliente(d.data())));
     clientes.sort((a, b) => (a.id || 0) - (b.id || 0));
@@ -1233,9 +1234,9 @@ async function loadDB() {
 }
 
 async function deleteFromDB(clienteId) {
-  if (!_db || !_auth.currentUser) return;
+  if (!window._db || !window._auth.currentUser) return;
   try {
-    await _db.collection('clientes').doc(String(clienteId)).delete();
+    await window._db.collection('clientes').doc(String(clienteId)).delete();
   } catch(e) {
     console.error('deleteFromDB error:', e);
     toast('❌ Erro ao excluir: ' + e.message, '#991b1b');
@@ -1245,8 +1246,8 @@ async function deleteFromDB(clienteId) {
 async function clearDB() {
   if (!confirm('Apagar TODOS os clientes cadastrados? Esta ação não pode ser desfeita.')) return;
   try {
-    const snap = await _db.collection('clientes').get();
-    const proms = snap.docs.map(d => _db.collection('clientes').doc(d.id).delete());
+    const snap = await window._db.collection('clientes').get();
+    const proms = snap.docs.map(d => window._db.collection('clientes').doc(d.id).delete());
     await Promise.all(proms);
     clientes = [];
     clienteAtual = null;
@@ -2818,7 +2819,7 @@ async function fazerLogin() {
   if (!email || !senha) { errEl.textContent = 'Preencha e-mail e senha.'; errEl.style.display='block'; return; }
   btn.disabled = true; btn.textContent = 'Entrando...'; errEl.style.display = 'none';
   try {
-    await _auth.signInWithEmailAndPassword(email, senha);
+    await window._auth.signInWithEmailAndPassword(email, senha);
     // onAuthStateChanged will handle the rest
   } catch(e) {
     const msgs = {
@@ -2836,7 +2837,7 @@ async function fazerLogin() {
 
 async function fazerLogout() {
   if (!confirm('Deseja sair do sistema?')) return;
-  await _auth.signOut();
+  await window._auth.signOut();
 }
 
 // ══════════════════════════════════════════════
